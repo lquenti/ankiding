@@ -16,7 +16,8 @@
 - [ ] Add Logging with [`tracing`](https://docs.rs/tracing/latest/tracing/)
 
 ## CLI
-- [ ] Create CLI Interface with clap
+- [x] Create CLI Interface with clap
+- [ ] Print to the CLI the cards found and the file currently processed
 - [ ] Allow for both file and directory input
 - [ ] Provide terminal output with [`termcolor`](https://docs.rs/termcolor/latest/termcolor/)
 - [ ] Publish Dockerfile
