@@ -8,8 +8,8 @@
 - [ ] Create Contribution Guidelines
 
 ## Library
-- [ ] Parse Ankiding-Syntax out of markdown
-- [ ] Create HTML from Markdown
+- [x] Parse Ankiding-Syntax out of markdown
+- [x] Create HTML from Markdown
 - [ ] Allow File Traversal for multiple markdown files with [`walkdir`](https://github.com/BurntSushi/walkdir)
 - [ ] Embed markdown into `apkg` package
 - [ ] Create Unit-Tests with [`cargo-nexttest`](https://nexte.st/)
