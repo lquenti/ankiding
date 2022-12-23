@@ -2,7 +2,14 @@
 name = "ankiding"
 version = "0.1.0"
 edition = "2021"
+description = "Creating Anki-Flashcards within Markdown!"
+homepage = "https://github.com/lquenti/ankiding"
+repository = "https://github.com/lquenti/ankiding"
+license = "MIT"
+authors = ["Lars Quentin <lars@lquenti.de>"]
+readme = "../README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+clap = { version = "4.0.32", features = ["derive"] }
