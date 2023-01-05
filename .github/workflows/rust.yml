@@ -1,0 +1,29 @@
+name: Everything Rust
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - run: |
+        rustup update
+        rustup component add clippy
+        rustup component add rustfmt
+    - name: Check
+      working-directory: ./ankiding
+      run: cargo check
+    - name: Run clippy
+      working-directory: ./ankiding
+      run: cargo clippy -- -Dwarnings
+    - name: Run Fmt
+      working-directory: ./ankiding
+      run: cargo fmt --check
+
+
+
