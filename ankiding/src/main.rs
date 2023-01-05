@@ -1,4 +1,9 @@
-use std::{fs, path::PathBuf};
+use std::collections::HashMap;
+use std::fs::{self, File};
+use std::io::Read;
+use std::path::{Path, PathBuf};
+
+use anyhow::Result;
 
 use clap::Parser;
 use comrak::{markdown_to_html, ComrakOptions};
@@ -26,26 +31,12 @@ struct Cli {
     path: PathBuf,
 }
 
-struct HTMLCard {
+struct Card {
     front: String,
     back: String,
 }
 
-fn extract_questions_and_answers(path: PathBuf) -> Vec<HTMLCard> {
-    let contents = fs::read_to_string(path).expect("Something went wrong reading the file");
-    let mut matches = Vec::new();
-    for cap in RE.captures_iter(&contents) {
-        let front_markdown = cap.name("question").unwrap().as_str().trim();
-        let back_markdown = cap.name("answer").unwrap().as_str().trim();
-
-        let front = markdown_to_html(front_markdown, &COMRAK_OPTIONS);
-        let back = markdown_to_html(back_markdown, &COMRAK_OPTIONS);
-        matches.push(HTMLCard { front, back });
-    }
-    matches
-}
-
-fn create_apkg_file_from_cards(cards: Vec<HTMLCard>) {
+fn create_apkg_file_from_cards(cards: Vec<Card>) {
     // TODO
     let my_model = Model::new(
         1607392319,
@@ -63,17 +54,81 @@ fn create_apkg_file_from_cards(cards: Vec<HTMLCard>) {
     my_deck.write_to_file("output.apkg").unwrap();
 }
 
+fn read_file_to_string(file: &Path) -> Result<String> {
+    let mut file = File::open(file)?;
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
+    Ok(contents)
+}
+
+fn find_all_files_by_extension(base_directory: &Path, file_extension: &str) -> Result<Vec<PathBuf>> {
+    let mut paths = Vec::new();
+    for entry in fs::read_dir(base_directory)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_dir() {
+            paths.append(&mut find_all_files_by_extension(&path, file_extension)?);
+        } else if path.is_file() {
+            let file_name = path.file_name().unwrap().to_str().unwrap();
+            if file_name.to_lowercase().ends_with(file_extension) {
+                paths.push(file_name.into());
+            }
+        }
+    }
+    Ok(paths)
+}
+
+fn extract_markdown_cards(markdown: &str) -> Vec<Card> {
+    let mut matches = Vec::new();
+    for cap in RE.captures_iter(&markdown) {
+        let front = cap.name("question").unwrap().as_str().trim().to_string();
+        let back = cap.name("answer").unwrap().as_str().trim().to_string();
+
+        matches.push(Card { front, back });
+    }
+    matches
+}
+
+fn markdown_card_to_html_card(card: Card) -> Card {
+    let front = markdown_to_html(&card.front, &COMRAK_OPTIONS);
+    let back = markdown_to_html(&card.back, &COMRAK_OPTIONS);
+    Card { front, back }
+}
+
+///
+//////////////////////////////////////////////
+
 fn main() {
     let cli = Cli::parse();
     let path = cli.path;
-    let cards = extract_questions_and_answers(path);
 
-    for card in &cards {
-        println!("Front: {:?}", card.front);
-        println!("Back: {:?}", card.back);
+    // Find all anki markdown files
+    let files;
+    if path.is_file() {
+        files = vec![path];
+    } else if path.is_dir() {
+        files = find_all_files_by_extension(&path, ".anki.md").unwrap();
+    } else {
+        panic!("Path is neither a file nor a directory");
+    }
+    println!("Files: {:?}", files);
+
+
+    // Read in all markdown files
+    let mut markdowns = HashMap::new();
+    for file in files {
+        let markdown = read_file_to_string(&file).unwrap();
+        markdowns.insert(file, markdown);
     }
 
-    create_apkg_file_from_cards(cards);
+    // Extract cards from markdown
+    // Next, convert markdown to html
+    let markdowns = markdowns
+        .into_iter()
+        .map(|(key, value)| (key, extract_markdown_cards(&value)))
+        .map(|(key, value)| (key, value.into_iter().map(markdown_card_to_html_card).collect()))
+        .collect::<HashMap<PathBuf, Vec<Card>>>();
+
 }
 
 #[cfg(test)]
