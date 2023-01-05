@@ -15,6 +15,11 @@ jobs:
         rustup update
         rustup component add clippy
         rustup component add rustfmt
+    - name: Install cargo-nextest
+      uses: baptiste0928/cargo-install@v1
+      with:
+        crate: cargo-nextest
+        locked: true
     - name: Check
       working-directory: ./ankiding
       run: cargo check
@@ -24,6 +29,6 @@ jobs:
     - name: Run Fmt
       working-directory: ./ankiding
       run: cargo fmt --check
-
-
-
+    - name: Run Tests
+      working-directory: ./ankiding
+      run: cargo nextest run
