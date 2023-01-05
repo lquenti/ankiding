@@ -13,6 +13,8 @@
 - [ ] Allow File Traversal for multiple markdown files with [`walkdir`](https://github.com/BurntSushi/walkdir)
 - [ ] Embed markdown into `apkg` package
 - [ ] Create Unit-Tests with [`cargo-nexttest`](https://nexte.st/)
+  - Check if it works with images as well
+  - Make sure that most testing functions are pure
 - [ ] Add Logging with [`tracing`](https://docs.rs/tracing/latest/tracing/)
 
 ## CLI

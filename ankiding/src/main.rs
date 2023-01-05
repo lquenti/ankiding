@@ -82,3 +82,12 @@ fn main() {
 
     create_apkg_file_from_cards(cards);
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+        let result = 2 + 2;
+        assert_eq!(result, 4);
+    }
+}
