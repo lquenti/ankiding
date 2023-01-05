@@ -1,25 +1,23 @@
-use std::{path::PathBuf, fs};
+use std::{fs, path::PathBuf};
 
 use clap::Parser;
 use comrak::{markdown_to_html, ComrakOptions};
-use genanki_rs::{Model, Field, Template, Deck, Note};
+use genanki_rs::{Deck, Field, Model, Note, Template};
 use lazy_static::lazy_static;
 use regex::Regex;
 
 lazy_static! {
-    static ref RE: Regex = Regex::new(
-        r"---\n\s*Q:(?P<question>(.|\n|\r)*?)\n---\n\s*A:(?P<answer>(.|\n|\r)*?)\n---"
-    ).unwrap();
+    static ref RE: Regex =
+        Regex::new(r"---\n\s*Q:(?P<question>(.|\n|\r)*?)\n---\n\s*A:(?P<answer>(.|\n|\r)*?)\n---")
+            .unwrap();
 }
 
 lazy_static! {
     static ref COMRAK_OPTIONS: ComrakOptions = {
-        let mut options = ComrakOptions::default();
         // TODO SET OPTIONS
-        options
+        ComrakOptions::default()
     };
 }
-
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -34,8 +32,7 @@ struct HTMLCard {
 }
 
 fn extract_questions_and_answers(path: PathBuf) -> Vec<HTMLCard> {
-    let contents = fs::read_to_string(path)
-        .expect("Something went wrong reading the file");
+    let contents = fs::read_to_string(path).expect("Something went wrong reading the file");
     let mut matches = Vec::new();
     for cap in RE.captures_iter(&contents) {
         let front_markdown = cap.name("question").unwrap().as_str().trim();
@@ -58,11 +55,7 @@ fn create_apkg_file_from_cards(cards: Vec<HTMLCard>) {
             .qfmt("{{Question}}")
             .afmt(r#"{{FrontSide}}<hr id="answer">{{Answer}}"#)],
     );
-    let mut my_deck = Deck::new(
-        2059400110,
-        "NAME",
-        "SOME DESCRIPTION",
-    );
+    let mut my_deck = Deck::new(2059400110, "NAME", "SOME DESCRIPTION");
     for card in cards {
         let my_note = Note::new(my_model.clone(), vec![&card.front, &card.back]).unwrap();
         my_deck.add_note(my_note);
