@@ -7,7 +7,7 @@ use anyhow::Result;
 
 use clap::Parser;
 use comrak::{markdown_to_html, ComrakOptions};
-use genanki_rs::{Deck, Field, Model, Note, Template};
+use genanki_rs::{Deck, Field, Model, Note, Package, Template};
 use lazy_static::lazy_static;
 use regex::Regex;
 
@@ -24,6 +24,26 @@ lazy_static! {
     };
 }
 
+const DEFAULT_ANKI_CSS: &str = ".card {
+ font-family: arial;
+ font-size: 20px;
+ text-align: center;
+ color: black;
+ background-color: white;
+}
+";
+
+lazy_static! {
+    static ref ANKI_MODEL: Model = Model::new(
+        0x1337420,
+        "Ankiding Model",
+        vec![Field::new("Question"), Field::new("Answer"),],
+        vec![Template::new("Card 1")
+            .qfmt("{{Question}}")
+            .afmt(r#"{{FrontSide}}<hr id="answer">{{Answer}}"#)],
+    );
+}
+
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
@@ -36,24 +56,6 @@ struct Card {
     back: String,
 }
 
-fn create_apkg_file_from_cards(cards: Vec<Card>) {
-    // TODO
-    let my_model = Model::new(
-        1607392319,
-        "Simple Model",
-        vec![Field::new("Question"), Field::new("Answer")],
-        vec![Template::new("Card 1")
-            .qfmt("{{Question}}")
-            .afmt(r#"{{FrontSide}}<hr id="answer">{{Answer}}"#)],
-    );
-    let mut my_deck = Deck::new(2059400110, "NAME", "SOME DESCRIPTION");
-    for card in cards {
-        let my_note = Note::new(my_model.clone(), vec![&card.front, &card.back]).unwrap();
-        my_deck.add_note(my_note);
-    }
-    my_deck.write_to_file("output.apkg").unwrap();
-}
-
 fn read_file_to_string(file: &Path) -> Result<String> {
     let mut file = File::open(file)?;
     let mut contents = String::new();
@@ -61,7 +63,10 @@ fn read_file_to_string(file: &Path) -> Result<String> {
     Ok(contents)
 }
 
-fn find_all_files_by_extension(base_directory: &Path, file_extension: &str) -> Result<Vec<PathBuf>> {
+fn find_all_files_by_extension(
+    base_directory: &Path,
+    file_extension: &str,
+) -> Result<Vec<PathBuf>> {
     let mut paths = Vec::new();
     for entry in fs::read_dir(base_directory)? {
         let entry = entry?;
@@ -71,7 +76,7 @@ fn find_all_files_by_extension(base_directory: &Path, file_extension: &str) -> R
         } else if path.is_file() {
             let file_name = path.file_name().unwrap().to_str().unwrap();
             if file_name.to_lowercase().ends_with(file_extension) {
-                paths.push(file_name.into());
+                paths.push(path);
             }
         }
     }
@@ -95,9 +100,6 @@ fn markdown_card_to_html_card(card: Card) -> Card {
     Card { front, back }
 }
 
-///
-//////////////////////////////////////////////
-
 fn main() {
     let cli = Cli::parse();
     let path = cli.path;
@@ -113,7 +115,6 @@ fn main() {
     }
     println!("Files: {:?}", files);
 
-
     // Read in all markdown files
     let mut markdowns = HashMap::new();
     for file in files {
@@ -126,9 +127,15 @@ fn main() {
     let markdowns = markdowns
         .into_iter()
         .map(|(key, value)| (key, extract_markdown_cards(&value)))
-        .map(|(key, value)| (key, value.into_iter().map(markdown_card_to_html_card).collect()))
+        .map(|(key, value)| {
+            (
+                key,
+                value.into_iter().map(markdown_card_to_html_card).collect(),
+            )
+        })
         .collect::<HashMap<PathBuf, Vec<Card>>>();
 
+    // TODO: Group up into functions
 }
 
 #[cfg(test)]
