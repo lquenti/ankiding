@@ -13,8 +13,11 @@ readme = "../README.md"
 
 [dependencies]
 anyhow = "1"
+chrono = "0.4"
 clap = { version = "4.0", features = ["derive"] }
 comrak = "0.15"
-genanki-rs = "0.3"
+#genanki-rs = "0.3"
+genanki-rs = { git = "https://github.com/Heliozoa/genanki-rs/", branch = "model-id" }
 lazy_static = "1.4.0"
+rand = "0.8"
 regex = "1.7.0"
