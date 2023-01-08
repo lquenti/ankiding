@@ -12,11 +12,16 @@ use genanki_rs::{Deck, Field, Model, Note, Package, Template};
 use lazy_static::lazy_static;
 use rand::Rng;
 use regex::Regex;
+use tempfile::tempdir;
 
 lazy_static! {
     static ref RE: Regex =
         Regex::new(r"---\n\s*Q:(?P<question>(.|\n|\r)*?)\n---\n\s*A:(?P<answer>(.|\n|\r)*?)\n---")
             .unwrap();
+}
+
+lazy_static! {
+    static ref IMG_RE: Regex = Regex::new(r#"<img src=["'](?P<group>.*?)["'].*?/>"#).unwrap();
 }
 
 lazy_static! {
@@ -148,7 +153,7 @@ fn main() -> Result<()> {
 
     // Extract cards from markdown
     // Next, convert markdown to html
-    let markdowns = markdowns
+    let htmls = markdowns
         .into_iter()
         .map(|(key, value)| (key, extract_markdown_cards(&value)))
         .map(|(key, value)| {
@@ -159,14 +164,19 @@ fn main() -> Result<()> {
         })
         .collect::<HashMap<PathBuf, Vec<Card>>>();
 
-    for (file, cards) in &markdowns {
-        println!("File: {:?}", file);
-        println!("Cards: {:?}", cards);
-        println!("---");
+
+    for (file, cards) in &htmls {
+        for card in cards {
+            for cap in IMG_RE.captures_iter(&card.back) {
+                let group = cap.name("group").unwrap().as_str();
+                println!("{}", group);
+            }
+        }
     }
 
+
     // Create and save the apkg
-    let decks = markdowns
+    let decks = htmls
         .into_iter()
         .map(|(key, value)| create_anki_deck(&key, &value))
         .collect::<Vec<Deck>>();
