@@ -12,7 +12,6 @@ use genanki_rs::{Deck, Field, Model, Note, Package, Template};
 use lazy_static::lazy_static;
 use rand::Rng;
 use regex::Regex;
-use tempfile::tempdir;
 
 lazy_static! {
     static ref RE: Regex =
@@ -21,7 +20,7 @@ lazy_static! {
 }
 
 lazy_static! {
-    static ref IMG_RE: Regex = Regex::new(r#"<img src=["'](?P<group>.*?)["'].*?/>"#).unwrap();
+    static ref IMG_RE: Regex = Regex::new(r#"<img src=["'](?P<src>.*?)["'].*?/>"#).unwrap();
 }
 
 lazy_static! {
@@ -130,6 +129,15 @@ fn create_anki_deck(file: &Path, cards: &[Card]) -> Deck {
     deck
 }
 
+fn extact_img_paths_from_html(html: &str) -> Vec<String> {
+    let mut paths = Vec::new();
+    for cap in IMG_RE.captures_iter(html) {
+        let path = cap.name("src").unwrap().as_str().to_string();
+        paths.push(path);
+    }
+    paths
+}
+
 fn main() -> Result<()> {
     let cli = Cli::parse();
     let path = cli.path;
@@ -164,16 +172,24 @@ fn main() -> Result<()> {
         })
         .collect::<HashMap<PathBuf, Vec<Card>>>();
 
+    // Extract all img paths
+    let img_paths = htmls
+        .iter()
+        .flat_map(|(_, cards)| {
+            cards
+                .iter()
+                .flat_map(|card| extact_img_paths_from_html(&card.front))
+                .chain(
+                    cards
+                        .iter()
+                        .flat_map(|card| extact_img_paths_from_html(&card.back)),
+                )
+        })
+        .collect::<Vec<String>>();
 
-    for (file, cards) in &htmls {
-        for card in cards {
-            for cap in IMG_RE.captures_iter(&card.back) {
-                let group = cap.name("group").unwrap().as_str();
-                println!("{}", group);
-            }
-        }
+    for img_path in img_paths {
+        println!("{}", img_path);
     }
-
 
     // Create and save the apkg
     let decks = htmls
