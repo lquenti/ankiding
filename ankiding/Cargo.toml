@@ -16,8 +16,7 @@ anyhow = "1"
 chrono = "0.4"
 clap = { version = "4.0", features = ["derive"] }
 comrak = "0.15"
-#genanki-rs = "0.3"
-genanki-rs = { git = "https://github.com/Heliozoa/genanki-rs/", branch = "model-id" }
+genanki-rs = "0.3"
 lazy_static = "1.4.0"
 rand = "0.8"
 regex = "1.7.0"
