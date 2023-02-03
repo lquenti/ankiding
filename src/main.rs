@@ -27,20 +27,22 @@ lazy_static! {
 }
 
 lazy_static! {
+    static ref INLINE_MATH_RE: Regex = Regex::new(r#"\$\$(?P<math>[\s\S]*?)\$\$"#).unwrap();
+    static ref DISPLAY_MATH_RE: Regex = Regex::new(r#"\\\[(?P<math>[\s\S]*?)\\\]"#).unwrap();
+}
+
+lazy_static! {
     static ref COMRAK_OPTIONS: ComrakOptions = {
         // TODO SET OPTIONS
         ComrakOptions::default()
     };
 }
 
-const DEFAULT_ANKI_CSS: &str = ".card {
- font-family: arial;
- font-size: 20px;
- text-align: center;
- color: black;
- background-color: white;
-}
-";
+const DEFAULT_ANKI_CSS: &str = include_str!("../assets/templates/base.css");
+
+const FRONT_SIDE_TEMPLATE: &str = include_str!("../assets/templates/front.html");
+const BACK_SIDE_TEMPLATE: &str = include_str!("../assets/templates/back.html");
+
 
 lazy_static! {
     static ref ANKI_MODEL: Model = Model::new(
@@ -48,12 +50,11 @@ lazy_static! {
         "Ankiding Model",
         vec![Field::new("Question"), Field::new("Answer"),],
         vec![Template::new("Card 1")
-            .qfmt("{{Question}}")
-            .afmt(r#"{{FrontSide}}<hr id="answer">{{Answer}}"#)],
+            .qfmt(FRONT_SIDE_TEMPLATE)
+            .afmt(BACK_SIDE_TEMPLATE)],
     )
     .css(DEFAULT_ANKI_CSS);
 }
-
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
@@ -64,7 +65,7 @@ struct Cli {
     output: Option<PathBuf>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Card {
     front: String,
     back: String,
@@ -167,10 +168,47 @@ fn main() -> Result<()> {
     }
 
     // Extract cards from markdown
-    // Next, convert markdown to html
     let mut htmls = markdowns
         .into_iter()
         .map(|(filename, cards)| (filename, extract_markdown_cards(&cards)))
+        .collect::<HashMap<PathBuf, Vec<Card>>>();
+
+    // Inline LaTeX
+    for (_, cards) in htmls.iter_mut() {
+        for card in cards {
+            for cap in INLINE_MATH_RE.captures_iter(&card.clone().front) {
+                let math = cap.name("math").unwrap().as_str();
+                card.front = card.front.replace(
+                    &format!("$${}$$", math), &format!("[latex]${}$[/latex]", math));
+            }
+            for cap in INLINE_MATH_RE.captures_iter(&card.clone().back) {
+                let math = cap.name("math").unwrap().as_str();
+                card.back = card.back.replace(
+                    &format!("$${}$$", math), &format!("[latex]${}$[/latex]", math));
+            }
+        }
+    }
+    // Display LaTeX
+    for (_, cards) in htmls.iter_mut() {
+        for card in cards {
+            for cap in DISPLAY_MATH_RE.captures_iter(&card.clone().front) {
+                let math = cap.name("math").unwrap().as_str();
+                card.front = card.front.replace(
+                    // TODO: SERIOUSLY REWRITE ME
+                    &format!("\\[{}\\]", math), &format!("[latex]\\\\[{}\\\\][/latex]", math));
+            }
+            for cap in DISPLAY_MATH_RE.captures_iter(&card.clone().back) {
+                println!("{:?}", cap);
+                let math = cap.name("math").unwrap().as_str();
+                card.back = card.back.replace(
+                    // TODO: SERIOUSLY REWRITE ME
+                    &format!("\\[{}\\]", math), &format!("[latex]\\\\[{}\\\\][/latex]", math));
+            }
+        }
+    }
+
+    let mut htmls = htmls
+        .into_iter()
         .map(|(filename, cards)| {
             (
                 filename,
