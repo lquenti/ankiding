@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::fs::{self, File};
-use std::io::Read;
+use std::io::{self, Read};
 use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 
 use anyhow::Result;
@@ -12,6 +12,8 @@ use genanki_rs::{Deck, Field, Model, Note, Package, Template};
 use lazy_static::lazy_static;
 use rand::Rng;
 use regex::Regex;
+use tempfile::TempDir;
+use url::Url;
 
 lazy_static! {
     static ref RE: Regex =
@@ -191,9 +193,36 @@ fn main() -> Result<()> {
         img_paths
     };
 
+    //for img_path in img_paths {
+    //    println!("{}", img_path);
+    //}
+
+    // Create a temp directory
+    let temp_dir = TempDir::new()?;
+
+    // For each img path, check if its a local file
+    // If it is, copy it to the temp directory
     for img_path in img_paths {
-        println!("{}", img_path);
+        let path = Path::new(&img_path);
+        if path.is_file() {
+            let file_name = path.file_name().unwrap().to_str().unwrap();
+            let new_path = format!("{}{}{}", temp_dir.path().to_str().unwrap(), MAIN_SEPARATOR, file_name);
+            println!("Processing {}", img_path);
+            fs::copy(path, new_path)?;
+        }
+        else if Url::parse(&img_path).is_ok() {
+            let file_name = img_path.split('/').last().unwrap();
+            let new_path = format!("{}{}{}", temp_dir.path().to_str().unwrap(), MAIN_SEPARATOR, file_name);
+            println!("Downloading {}", img_path);
+            let mut response = reqwest::blocking::get(&img_path)?;
+            let mut file = File::create(new_path)?;
+            io::copy(&mut response, &mut file)?;
+        }
+        else {
+            panic!("Image path {} is neither a local file nor a url", img_path);
+        }
     }
+
 
     // Create and save the apkg
     let decks = htmls
