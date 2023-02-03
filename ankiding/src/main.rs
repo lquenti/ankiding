@@ -16,6 +16,7 @@ use tempfile::TempDir;
 use url::Url;
 
 lazy_static! {
+    // TODO rename me
     static ref RE: Regex =
         Regex::new(r"---\n\s*Q:(?P<question>(.|\n|\r)*?)\n---\n\s*A:(?P<answer>(.|\n|\r)*?)\n---")
             .unwrap();
@@ -148,14 +149,15 @@ fn main() -> Result<()> {
     let path = cli.path;
 
     // Find all anki markdown files
-    let files;
-    if path.is_file() {
-        files = vec![path];
-    } else if path.is_dir() {
-        files = find_all_files_by_extension(&path, ".anki.md").unwrap();
-    } else {
-        panic!("Path is neither a file nor a directory");
-    }
+    let files = {
+        if path.is_file() {
+            vec![path]
+        } else if path.is_dir() {
+            find_all_files_by_extension(&path, ".anki.md").unwrap()
+        } else {
+            panic!("Path is neither a file nor a directory");
+        }
+    };
 
     // Read in all markdown files
     let mut markdowns = HashMap::new();
