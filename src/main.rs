@@ -27,6 +27,11 @@ lazy_static! {
 }
 
 lazy_static! {
+    static ref INLINE_MATH_RE: Regex = Regex::new(r#"\$\$(?P<math>[\s\S]*?)\$\$"#).unwrap();
+    static ref DISPLAY_MATH_RE: Regex = Regex::new(r"\\\[\n(.+)\n\\\]").unwrap();
+}
+
+lazy_static! {
     static ref COMRAK_OPTIONS: ComrakOptions = {
         // TODO SET OPTIONS
         ComrakOptions::default()
@@ -50,7 +55,6 @@ lazy_static! {
     )
     .css(DEFAULT_ANKI_CSS);
 }
-
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
@@ -61,7 +65,7 @@ struct Cli {
     output: Option<PathBuf>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Card {
     front: String,
     back: String,
@@ -175,6 +179,37 @@ fn main() -> Result<()> {
             )
         })
         .collect::<HashMap<PathBuf, Vec<Card>>>();
+
+    // Inline LaTeX
+    for (_, cards) in htmls.iter_mut() {
+        for card in cards {
+            for cap in INLINE_MATH_RE.captures_iter(&card.clone().front) {
+                let math = cap.name("math").unwrap().as_str();
+                card.front = card.front.replace(
+                    &format!("$${}$$", math), &format!("[latex]${}$[/latex]", math));
+            }
+            for cap in INLINE_MATH_RE.captures_iter(&card.clone().back) {
+                let math = cap.name("math").unwrap().as_str();
+                card.back = card.back.replace(
+                    &format!("$${}$$", math), &format!("[latex]${}$[/latex]", math));
+            }
+        }
+    }
+    // Display LaTeX
+    for (_, cards) in htmls.iter_mut() {
+        for card in cards {
+            for cap in DISPLAY_MATH_RE.captures_iter(&card.clone().front) {
+                let math = cap.name("math").unwrap().as_str();
+                card.front = card.front.replace(
+                    math, &format!("[latex]${}$[/latex]", math));
+            }
+            for cap in DISPLAY_MATH_RE.captures_iter(&card.clone().back) {
+                let math = cap.name("math").unwrap().as_str();
+                card.back = card.back.replace(
+                    math, &format!("[latex]${}$[/latex]", math));
+            }
+        }
+    }
 
     let temp_dir = TempDir::new()?;
     let mut all_new_files = Vec::new();
