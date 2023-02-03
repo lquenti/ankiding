@@ -56,6 +56,9 @@ lazy_static! {
 struct Cli {
     /// The path to the markdown files
     path: PathBuf,
+    /// The path to the output file
+    #[arg(short, long)]
+    output: Option<PathBuf>,
 }
 
 #[derive(Debug)]
@@ -198,7 +201,23 @@ fn main() -> Result<()> {
         .map(|(key, value)| create_anki_deck(&key, &value))
         .collect::<Vec<Deck>>();
     let mut package = Package::new(decks, Vec::new())?;
-    package.write_to_file("output.apkg")?;
+    match cli.output {
+        // TODO duplication with file handler finding markdown files
+        Some(path) => {
+            // If is directory, save to directory
+            // If is file, save to file
+            // If is neither, panic
+            if path.is_dir() {
+                let output_path = format!("{}{}output.apkg", path.to_str().unwrap(), MAIN_SEPARATOR);
+                package.write_to_file(&output_path)?;
+            } else if path.is_file() {
+                package.write_to_file(&path.to_str().unwrap())?;
+            } else {
+                panic!("Path is neither a file nor a directory");
+            }
+        }
+        None => package.write_to_file("output.apkg")?,
+    }
 
     Ok(())
 }
