@@ -33,14 +33,11 @@ lazy_static! {
     };
 }
 
-const DEFAULT_ANKI_CSS: &str = ".card {
- font-family: arial;
- font-size: 20px;
- text-align: center;
- color: black;
- background-color: white;
-}
-";
+const DEFAULT_ANKI_CSS: &str = include_str!("../assets/templates/base.css");
+
+const FRONT_SIDE_TEMPLATE: &str = include_str!("../assets/templates/front.html");
+const BACK_SIDE_TEMPLATE: &str = include_str!("../assets/templates/back.html");
+
 
 lazy_static! {
     static ref ANKI_MODEL: Model = Model::new(
@@ -48,8 +45,8 @@ lazy_static! {
         "Ankiding Model",
         vec![Field::new("Question"), Field::new("Answer"),],
         vec![Template::new("Card 1")
-            .qfmt("{{Question}}")
-            .afmt(r#"{{FrontSide}}<hr id="answer">{{Answer}}"#)],
+            .qfmt(FRONT_SIDE_TEMPLATE)
+            .afmt(BACK_SIDE_TEMPLATE)],
     )
     .css(DEFAULT_ANKI_CSS);
 }
