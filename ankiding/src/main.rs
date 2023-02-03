@@ -166,78 +166,104 @@ fn main() -> Result<()> {
 
     // Extract cards from markdown
     // Next, convert markdown to html
-    let htmls = markdowns
+    let mut htmls = markdowns
         .into_iter()
-        .map(|(key, value)| (key, extract_markdown_cards(&value)))
-        .map(|(key, value)| {
+        .map(|(filename, cards)| (filename, extract_markdown_cards(&cards)))
+        .map(|(filename, cards)| {
             (
-                key,
-                value.into_iter().map(markdown_card_to_html_card).collect(),
+                filename,
+                cards.into_iter().map(markdown_card_to_html_card).collect(),
             )
         })
         .collect::<HashMap<PathBuf, Vec<Card>>>();
 
-    // Extract all img paths
-    let img_paths = {
-        let mut img_paths = Vec::new();
-        for (_, cards) in htmls.iter() {
-            for card in cards {
-                for path in extact_img_paths_from_html(&card.front) {
-                    img_paths.push(path);
+    let temp_dir = TempDir::new()?;
+    let mut all_new_files = Vec::new();
+    for (_, cards) in htmls.iter_mut() {
+        for card in cards {
+            for img_path in extact_img_paths_from_html(&card.front) {
+                let path = Path::new(&img_path);
+                if path.is_file() {
+                    let file_name = path.file_name().unwrap().to_str().unwrap();
+                    let new_path = format!(
+                        "{}{}{}",
+                        temp_dir.path().to_str().unwrap(),
+                        MAIN_SEPARATOR,
+                        file_name
+                    );
+                    println!("Processing {}", img_path);
+                    fs::copy(path, &new_path)?;
+                    card.front = card.front.replace(&img_path, &file_name);
+                    all_new_files.push(new_path);
+                } else if Url::parse(&img_path).is_ok() {
+                    let file_name = img_path.split('/').last().unwrap();
+                    let new_path = format!(
+                        "{}{}{}",
+                        temp_dir.path().to_str().unwrap(),
+                        MAIN_SEPARATOR,
+                        file_name
+                    );
+                    println!("Downloading {}", img_path);
+                    let mut response = reqwest::blocking::get(&img_path)?;
+                    let mut file = File::create(&new_path)?;
+                    io::copy(&mut response, &mut file)?;
+                    card.front = card.front.replace(&img_path, &file_name);
+                    println!("Temp path:  {}", new_path);
+                    all_new_files.push(new_path);
+                } else {
+                    panic!("Image path {} is neither a local file nor a url", img_path);
                 }
-                for path in extact_img_paths_from_html(&card.back) {
-                    img_paths.push(path);
+            }
+            for img_path in extact_img_paths_from_html(&card.back) {
+                let path = Path::new(&img_path);
+                if path.is_file() {
+                    let file_name = path.file_name().unwrap().to_str().unwrap();
+                    let new_path = format!(
+                        "{}{}{}",
+                        temp_dir.path().to_str().unwrap(),
+                        MAIN_SEPARATOR,
+                        file_name
+                    );
+                    println!("Processing {}", img_path);
+                    fs::copy(path, &new_path)?;
+                    card.back = card.back.replace(&img_path, &file_name);
+                    all_new_files.push(new_path);
+                } else if Url::parse(&img_path).is_ok() {
+                    let file_name = img_path.split('/').last().unwrap();
+                    let new_path = format!(
+                        "{}{}{}",
+                        temp_dir.path().to_str().unwrap(),
+                        MAIN_SEPARATOR,
+                        file_name
+                    );
+                    println!("Downloading {}", img_path);
+                    let mut response = reqwest::blocking::get(&img_path)?;
+                    let mut file = File::create(&new_path)?;
+                    io::copy(&mut response, &mut file)?;
+                    card.back = card.back.replace(&img_path, &file_name);
+                    println!("Temp path:  {}", new_path);
+                    all_new_files.push(new_path);
+                } else {
+                    panic!("Image path {} is neither a local file nor a url", img_path);
                 }
             }
         }
-        img_paths
-    };
-
-    //for img_path in img_paths {
-    //    println!("{}", img_path);
-    //}
-
-    // Create a temp directory
-    let temp_dir = TempDir::new()?;
-
-    // For each img path, check if its a local file
-    // If it is, copy it to the temp directory
-    for img_path in img_paths {
-        let path = Path::new(&img_path);
-        if path.is_file() {
-            let file_name = path.file_name().unwrap().to_str().unwrap();
-            let new_path = format!("{}{}{}", temp_dir.path().to_str().unwrap(), MAIN_SEPARATOR, file_name);
-            println!("Processing {}", img_path);
-            fs::copy(path, new_path)?;
-        }
-        else if Url::parse(&img_path).is_ok() {
-            let file_name = img_path.split('/').last().unwrap();
-            let new_path = format!("{}{}{}", temp_dir.path().to_str().unwrap(), MAIN_SEPARATOR, file_name);
-            println!("Downloading {}", img_path);
-            let mut response = reqwest::blocking::get(&img_path)?;
-            let mut file = File::create(new_path)?;
-            io::copy(&mut response, &mut file)?;
-        }
-        else {
-            panic!("Image path {} is neither a local file nor a url", img_path);
-        }
     }
-
 
     // Create and save the apkg
     let decks = htmls
         .into_iter()
         .map(|(key, value)| create_anki_deck(&key, &value))
         .collect::<Vec<Deck>>();
-    let mut package = Package::new(decks, Vec::new())?;
+    let all_new_files = all_new_files.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
+    println!("All new files: {:?}", all_new_files);
+    let mut package = Package::new(decks, all_new_files)?;
     match cli.output {
         // TODO duplication with file handler finding markdown files
         Some(path) => {
-            // If is directory, save to directory
-            // If is file, save to file
-            // If is neither, panic
             if path.is_dir() {
-                let output_path = format!("{}{}output.apkg", path.to_str().unwrap(), MAIN_SEPARATOR);
+                let output_path =
+                    format!("{}{}output.apkg", path.to_str().unwrap(), MAIN_SEPARATOR);
                 package.write_to_file(&output_path)?;
             } else if path.is_file() {
                 package.write_to_file(&path.to_str().unwrap())?;
