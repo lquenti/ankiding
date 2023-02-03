@@ -173,19 +173,20 @@ fn main() -> Result<()> {
         .collect::<HashMap<PathBuf, Vec<Card>>>();
 
     // Extract all img paths
-    let img_paths = htmls
-        .iter()
-        .flat_map(|(_, cards)| {
-            cards
-                .iter()
-                .flat_map(|card| extact_img_paths_from_html(&card.front))
-                .chain(
-                    cards
-                        .iter()
-                        .flat_map(|card| extact_img_paths_from_html(&card.back)),
-                )
-        })
-        .collect::<Vec<String>>();
+    let img_paths = {
+        let mut img_paths = Vec::new();
+        for (_, cards) in htmls.iter() {
+            for card in cards {
+                for path in extact_img_paths_from_html(&card.front) {
+                    img_paths.push(path);
+                }
+                for path in extact_img_paths_from_html(&card.back) {
+                    img_paths.push(path);
+                }
+            }
+        }
+        img_paths
+    };
 
     for img_path in img_paths {
         println!("{}", img_path);
