@@ -28,7 +28,7 @@ lazy_static! {
 
 lazy_static! {
     static ref INLINE_MATH_RE: Regex = Regex::new(r#"\$\$(?P<math>[\s\S]*?)\$\$"#).unwrap();
-    static ref DISPLAY_MATH_RE: Regex = Regex::new(r"\\\[\n(.+)\n\\\]").unwrap();
+    static ref DISPLAY_MATH_RE: Regex = Regex::new(r#"\\\[(?P<math>[\s\S]*?)\\\]"#).unwrap();
 }
 
 lazy_static! {
@@ -168,16 +168,9 @@ fn main() -> Result<()> {
     }
 
     // Extract cards from markdown
-    // Next, convert markdown to html
     let mut htmls = markdowns
         .into_iter()
         .map(|(filename, cards)| (filename, extract_markdown_cards(&cards)))
-        .map(|(filename, cards)| {
-            (
-                filename,
-                cards.into_iter().map(markdown_card_to_html_card).collect(),
-            )
-        })
         .collect::<HashMap<PathBuf, Vec<Card>>>();
 
     // Inline LaTeX
@@ -201,15 +194,28 @@ fn main() -> Result<()> {
             for cap in DISPLAY_MATH_RE.captures_iter(&card.clone().front) {
                 let math = cap.name("math").unwrap().as_str();
                 card.front = card.front.replace(
-                    math, &format!("[latex]${}$[/latex]", math));
+                    // TODO: SERIOUSLY REWRITE ME
+                    &format!("\\[{}\\]", math), &format!("[latex]\\\\[{}\\\\][/latex]", math));
             }
             for cap in DISPLAY_MATH_RE.captures_iter(&card.clone().back) {
+                println!("{:?}", cap);
                 let math = cap.name("math").unwrap().as_str();
                 card.back = card.back.replace(
-                    math, &format!("[latex]${}$[/latex]", math));
+                    // TODO: SERIOUSLY REWRITE ME
+                    &format!("\\[{}\\]", math), &format!("[latex]\\\\[{}\\\\][/latex]", math));
             }
         }
     }
+
+    let mut htmls = htmls
+        .into_iter()
+        .map(|(filename, cards)| {
+            (
+                filename,
+                cards.into_iter().map(markdown_card_to_html_card).collect(),
+            )
+        })
+        .collect::<HashMap<PathBuf, Vec<Card>>>();
 
     let temp_dir = TempDir::new()?;
     let mut all_new_files = Vec::new();
