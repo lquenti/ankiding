@@ -24,7 +24,6 @@ struct Cli {
 fn main() -> Result<()> {
     let mut replacements = HashMap::new();
     let temp_dir = TempDir::new()?;
-    let external_files = HashMap::new();
 
     let _markdowns = io::get_all_files(Cli::parse().path)?
         .into_iter()
@@ -42,11 +41,24 @@ fn main() -> Result<()> {
                 cards.into_iter().map(Card::to_html).collect::<Vec<Card>>(),
             )
         })
-        // Extract img tags
+        // Extract and replace img tags
         .map(|(filename, cards)| {
-            //external_files.extend(
-            //    Card::mass_apply_to_vec(cards.clone(), parser::extract_img_paths_from_html)
-            //);
+            let img_map = Card::mass_apply_to_hashmap(cards.clone(), |html| {
+                parser::create_img_paths_mapping_from_html(&temp_dir.path().to_path_buf(), html)
+            });
+            let cards = cards
+                .into_iter()
+                .map(|card| {
+                    card.map(|html| {
+                        let mut html = html;
+                        for (key, value) in img_map.iter() {
+                            html = html.replace(key, value.to_str().unwrap());
+                        }
+                        html
+                    })
+                })
+                .collect::<Vec<Card>>();
+            replacements.extend(img_map);
             (filename, cards)
         })
         // Convert to Ankideck

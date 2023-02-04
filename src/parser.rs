@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use std::path::PathBuf;
+
 use comrak::{markdown_to_html, ComrakOptions};
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -52,13 +55,30 @@ impl Card {
 
     // TODO Rename me
     pub fn mass_apply_to_vec<A>(cards: Vec<Self>, f: impl Fn(&str) -> Vec<A>) -> Vec<A> {
-        cards.into_iter()
-            .map(|card| card.apply(f))
+        cards
+            .into_iter()
+            .map(|card| card.apply(&f))
+            .flat_map(|(xs, ys)| xs.into_iter().chain(ys.into_iter()).collect::<Vec<A>>())
+            .collect::<Vec<A>>()
+    }
+
+    pub fn mass_apply_to_hashmap<A, B>(
+        cards: Vec<Self>,
+        f: impl Fn(&str) -> HashMap<A, B>,
+    ) -> HashMap<A, B>
+    where
+        A: std::cmp::Eq + std::hash::Hash + std::clone::Clone,
+        B: std::clone::Clone,
+    {
+        cards
+            .into_iter()
+            .map(|card| card.apply(&f))
             .flat_map(|(xs, ys)| {
                 xs.into_iter()
                     .chain(ys.into_iter())
-                    .collect::<Vec<A>>()
-            }).collect::<Vec<A>>()
+                    .collect::<HashMap<A, B>>()
+            })
+            .collect::<HashMap<A, B>>()
     }
 }
 
@@ -71,3 +91,23 @@ pub fn extract_img_paths_from_html(html: &str) -> Vec<String> {
     }
     paths
 }
+
+pub fn create_img_paths_mapping_from_html(
+    base_path: &PathBuf,
+    html: &str,
+) -> HashMap<String, PathBuf> {
+    let mut paths = HashMap::new();
+    for cap in IMG_RE.captures_iter(html) {
+        let path = cap.name("src").unwrap().as_str().trim().to_string();
+        let filename = PathBuf::from(&path)
+            .file_name()
+            .unwrap()
+            .to_str()
+            .unwrap()
+            .to_string();
+        paths.insert(path, base_path.join(filename));
+    }
+    paths
+}
+
+// TODO join two functions above
