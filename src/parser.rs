@@ -34,7 +34,7 @@ impl Card {
         matches
     }
 
-    pub fn to_html(self) -> Self {
+    pub fn into_html(self) -> Self {
         let front = markdown_to_html(&self.front, &COMRAK_OPTIONS);
         let back = markdown_to_html(&self.back, &COMRAK_OPTIONS);
         Card { front, back }

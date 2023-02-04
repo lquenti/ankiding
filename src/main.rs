@@ -42,7 +42,7 @@ fn main() -> Result<()> {
         .map(|(filename, cards)| {
             (
                 filename,
-                cards.into_iter().map(Card::to_html).collect::<Vec<Card>>(),
+                cards.into_iter().map(Card::into_html).collect::<Vec<Card>>(),
             )
         })
         .map(|(filename, cards)| {
@@ -61,11 +61,11 @@ fn main() -> Result<()> {
         })
         // Convert to Ankideck
         .map(|(filename, cards)| {
-            let deck = anki::from_cards(&filename, &cards);
-            deck
+            anki::from_cards(&filename, &cards)
         })
         .collect::<Vec<genanki_rs::Deck>>();
 
+    // Download all files and collect them
     let temp_dir = TempDir::new()?;
     let new_files: Vec<String> = replacements
         .iter()
@@ -79,7 +79,7 @@ fn main() -> Result<()> {
             if Path::new(old_path).is_file() {
                 std::fs::copy(old_path, &new_path)?;
                 Ok(new_path)
-            } else if let Some(url) = Url::parse(old_path).ok() {
+            } else if let Ok(url) = Url::parse(old_path) {
                 let mut response = reqwest::blocking::get(url)?;
                 let mut file = File::create(&new_path)?;
                 copy(&mut response, &mut file)?;
@@ -91,9 +91,8 @@ fn main() -> Result<()> {
         .filter_map(Result::ok)
         .collect();
 
-    // TODO REWRITE ME
+    // Save file
     let xs = new_files.iter().map(|s| s.as_ref()).collect();
-    println!("xs: {:?}", xs);
     let mut package = Package::new(decks, xs)?;
     match cli.output {
         // TODO duplication with file handler finding markdown files
@@ -103,7 +102,7 @@ fn main() -> Result<()> {
                     format!("{}{}output.apkg", path.to_str().unwrap(), MAIN_SEPARATOR);
                 package.write_to_file(&output_path)?;
             } else if path.is_file() {
-                package.write_to_file(&path.to_str().unwrap())?;
+                package.write_to_file(path.to_str().unwrap())?;
             } else {
                 panic!("Path is neither a file nor a directory");
             }
