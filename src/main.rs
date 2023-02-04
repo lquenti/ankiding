@@ -1,11 +1,15 @@
 use crate::parser::Card;
 
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::fs::File;
+use std::io::copy;
+use std::path::{MAIN_SEPARATOR, PathBuf, Path};
 
 use anyhow::Result;
 use clap::Parser;
+use genanki_rs::Package;
 use tempfile::TempDir;
+use url::Url;
 
 mod anki;
 mod io;
@@ -23,9 +27,9 @@ struct Cli {
 
 fn main() -> Result<()> {
     let mut replacements = HashMap::new();
-    let temp_dir = TempDir::new()?;
+    let cli = Cli::parse();
 
-    let _markdowns = io::get_all_files(Cli::parse().path)?
+    let decks = io::get_all_files(cli.path)?
         .into_iter()
         // Read files
         .map(|filename| {
@@ -41,32 +45,68 @@ fn main() -> Result<()> {
                 cards.into_iter().map(Card::to_html).collect::<Vec<Card>>(),
             )
         })
-        // Extract and replace img tags
         .map(|(filename, cards)| {
-            let img_map = Card::mass_apply_to_hashmap(cards.clone(), |html| {
-                parser::create_img_paths_mapping_from_html(&temp_dir.path().to_path_buf(), html)
-            });
-            let cards = cards
-                .into_iter()
-                .map(|card| {
-                    card.map(|html| {
-                        let mut html = html;
-                        for (key, value) in img_map.iter() {
-                            html = html.replace(key, value.to_str().unwrap());
-                        }
-                        html
-                    })
-                })
-                .collect::<Vec<Card>>();
-            replacements.extend(img_map);
+            let old_img_paths = Card::mass_apply_to_vec(cards.clone(), parser::extract_img_paths_from_html);
+            let mut cards = cards;
+            for path in &old_img_paths {
+                // TODO check whether it needs a file extension
+                let new_filename = format!("{}", uuid::Uuid::new_v4());
+                cards = cards
+                    .into_iter()
+                    .map(|card| card.map(|html| html.replace(path, &new_filename)))
+                    .collect::<Vec<Card>>();
+                replacements.insert(path.to_string(), new_filename);
+            }
             (filename, cards)
         })
         // Convert to Ankideck
         .map(|(filename, cards)| {
             let deck = anki::from_cards(&filename, &cards);
-            (filename, deck)
+            deck
         })
-        .collect::<Vec<(PathBuf, genanki_rs::Deck)>>();
+        .collect::<Vec<genanki_rs::Deck>>();
+
+
+    // for each replacement, add the tempdir to new filename
+    // and copy the file to the tempdir
+    let temp_dir = TempDir::new()?;
+    let mut new_files = Vec::new();
+    for (old_path, new_filename) in replacements {
+        println!("new_filename: {}", new_filename);
+        let new_path = format!("{}{}{}", temp_dir.path().to_str().unwrap(), MAIN_SEPARATOR, new_filename);
+        new_files.push(new_path.clone());
+        if Path::new(&old_path).is_file() {
+            std::fs::copy(old_path, new_path)?;
+        } else if Url::parse(&old_path).is_ok() {
+            println!("Downloading {}", old_path);
+            let mut response = reqwest::blocking::get(&old_path)?;
+            println!("Writing to {}", new_path);
+            let mut file = File::create(new_path)?;
+            copy(&mut response, &mut file)?;
+        } else {
+            panic!("Path is neither a file nor a url");
+        }
+    }
+
+    // TODO REWRITE ME
+    let xs = new_files.iter().map(|s| s.as_ref()).collect();
+    println!("xs: {:?}", xs);
+    let mut package = Package::new(decks, xs)?;
+    match cli.output {
+        // TODO duplication with file handler finding markdown files
+        Some(path) => {
+            if path.is_dir() {
+                let output_path =
+                    format!("{}{}output.apkg", path.to_str().unwrap(), MAIN_SEPARATOR);
+                package.write_to_file(&output_path)?;
+            } else if path.is_file() {
+                package.write_to_file(&path.to_str().unwrap())?;
+            } else {
+                panic!("Path is neither a file nor a directory");
+            }
+        }
+        None => package.write_to_file("output.apkg")?,
+    }
 
     Ok(())
 }

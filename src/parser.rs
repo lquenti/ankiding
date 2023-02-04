@@ -91,23 +91,3 @@ pub fn extract_img_paths_from_html(html: &str) -> Vec<String> {
     }
     paths
 }
-
-pub fn create_img_paths_mapping_from_html(
-    base_path: &PathBuf,
-    html: &str,
-) -> HashMap<String, PathBuf> {
-    let mut paths = HashMap::new();
-    for cap in IMG_RE.captures_iter(html) {
-        let path = cap.name("src").unwrap().as_str().trim().to_string();
-        let filename = PathBuf::from(&path)
-            .file_name()
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .to_string();
-        paths.insert(path, base_path.join(filename));
-    }
-    paths
-}
-
-// TODO join two functions above
