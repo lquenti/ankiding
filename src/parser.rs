@@ -1,6 +1,3 @@
-use std::collections::HashMap;
-use std::path::PathBuf;
-
 use comrak::{markdown_to_html, ComrakOptions};
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -60,25 +57,6 @@ impl Card {
             .map(|card| card.apply(&f))
             .flat_map(|(xs, ys)| xs.into_iter().chain(ys.into_iter()).collect::<Vec<A>>())
             .collect::<Vec<A>>()
-    }
-
-    pub fn mass_apply_to_hashmap<A, B>(
-        cards: Vec<Self>,
-        f: impl Fn(&str) -> HashMap<A, B>,
-    ) -> HashMap<A, B>
-    where
-        A: std::cmp::Eq + std::hash::Hash + std::clone::Clone,
-        B: std::clone::Clone,
-    {
-        cards
-            .into_iter()
-            .map(|card| card.apply(&f))
-            .flat_map(|(xs, ys)| {
-                xs.into_iter()
-                    .chain(ys.into_iter())
-                    .collect::<HashMap<A, B>>()
-            })
-            .collect::<HashMap<A, B>>()
     }
 }
 

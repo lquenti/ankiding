@@ -3,7 +3,7 @@ use crate::parser::Card;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::copy;
-use std::path::{MAIN_SEPARATOR, PathBuf, Path};
+use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 
 use anyhow::Result;
 use clap::Parser;
@@ -46,10 +46,10 @@ fn main() -> Result<()> {
             )
         })
         .map(|(filename, cards)| {
-            let old_img_paths = Card::mass_apply_to_vec(cards.clone(), parser::extract_img_paths_from_html);
+            let old_img_paths =
+                Card::mass_apply_to_vec(cards.clone(), parser::extract_img_paths_from_html);
             let mut cards = cards;
             for path in &old_img_paths {
-                // TODO check whether it needs a file extension
                 let new_filename = format!("{}", uuid::Uuid::new_v4());
                 cards = cards
                     .into_iter()
@@ -66,27 +66,30 @@ fn main() -> Result<()> {
         })
         .collect::<Vec<genanki_rs::Deck>>();
 
-
-    // for each replacement, add the tempdir to new filename
-    // and copy the file to the tempdir
     let temp_dir = TempDir::new()?;
-    let mut new_files = Vec::new();
-    for (old_path, new_filename) in replacements {
-        println!("new_filename: {}", new_filename);
-        let new_path = format!("{}{}{}", temp_dir.path().to_str().unwrap(), MAIN_SEPARATOR, new_filename);
-        new_files.push(new_path.clone());
-        if Path::new(&old_path).is_file() {
-            std::fs::copy(old_path, new_path)?;
-        } else if Url::parse(&old_path).is_ok() {
-            println!("Downloading {}", old_path);
-            let mut response = reqwest::blocking::get(&old_path)?;
-            println!("Writing to {}", new_path);
-            let mut file = File::create(new_path)?;
-            copy(&mut response, &mut file)?;
-        } else {
-            panic!("Path is neither a file nor a url");
-        }
-    }
+    let new_files: Vec<String> = replacements
+        .iter()
+        .map(|(old_path, new_filename)| {
+            let new_path = format!(
+                "{}{}{}",
+                temp_dir.path().to_str().unwrap(),
+                MAIN_SEPARATOR,
+                new_filename
+            );
+            if Path::new(old_path).is_file() {
+                std::fs::copy(old_path, &new_path)?;
+                Ok(new_path)
+            } else if let Some(url) = Url::parse(old_path).ok() {
+                let mut response = reqwest::blocking::get(url)?;
+                let mut file = File::create(&new_path)?;
+                copy(&mut response, &mut file)?;
+                Ok(new_path)
+            } else {
+                Err(anyhow::Error::msg("Path is neither a file nor a url"))
+            }
+        })
+        .filter_map(Result::ok)
+        .collect();
 
     // TODO REWRITE ME
     let xs = new_files.iter().map(|s| s.as_ref()).collect();
