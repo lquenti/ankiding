@@ -30,6 +30,8 @@ struct Cli {
 }
 
 fn main() -> Result<()> {
+    latex::render_formula("\\sum_{i=1}^n i = \\frac{n\\cdot(n+1)}{2}", &Path::new("./test.png"))?;
+    /*
     let mut replacements = HashMap::new();
     let cli = Cli::parse();
 
@@ -114,6 +116,6 @@ fn main() -> Result<()> {
         }
         None => package.write_to_file("output.apkg")?,
     }
-
+    */
     Ok(())
 }
