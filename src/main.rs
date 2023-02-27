@@ -101,12 +101,10 @@ fn main() -> Result<()> {
         // TODO duplication with file handler finding markdown files
         Some(path) => {
             if path.is_dir() {
-                let output_path =
-                    format!("{}{}output.apkg", path.to_str().unwrap(), MAIN_SEPARATOR);
+                let output_path = format!("{}{}output.apkg", path.to_str().unwrap(), MAIN_SEPARATOR);
                 package.write_to_file(&output_path)?;
-            } else if path.is_file() { 
-                // TODO: This doesnt work when the file not exists before
-                package.write_to_file(path.to_str().unwrap())?;
+            } else if path.parent().unwrap().is_dir() {
+                package.write_to_file(path.as_os_str().to_str().unwrap())?;
             } else {
                 panic!("Path is neither a file nor a directory");
             }
