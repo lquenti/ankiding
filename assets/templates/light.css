@@ -1,9 +1,27 @@
 .card {
- font-family: arial;
- font-size: 20px;
- text-align: center;
- display: flex;
- justify-content: center;
- color: black;
- background-color: white;
+    font-family: arial;
+    font-size: 20px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    color: black;
+    background-color: white;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+table td,
+table th {
+    padding: 8px;
+}
+
+table th {
+    font-weight: bold;
+    border: 0;
+}
+
+table tr {
+    border-top: 1px solid lightgray;
 }
