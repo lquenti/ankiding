@@ -1,19 +1,22 @@
 // TODO ADD LOGGING
 // TODO EXPLAIN WHY WE HAVE TO DO THIS
 
-use std::env;
-use std::fs::{self, File};
+use std::fs::File;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::Command;
 
 use tempfile::tempdir;
 use which::which;
 
-fn require_executable(name: &str) {
-    which(name).expect(&format!("Executable {} not found. Please install it and make sure it is in your PATH.", name));
+pub fn require_executable(name: &str) {
+    which(name).unwrap_or_else(|_| {
+        panic!(
+            "Executable {} not found. Please install it and make sure it is in your PATH.",
+            name
+        )
+    });
 }
-
 
 fn create_latex_file(formula: &str, filename: &Path) -> io::Result<()> {
     let mut file = File::create(filename)?;
@@ -46,8 +49,7 @@ fn compile_latex_file(input_file: &Path, output_file: &Path) -> io::Result<()> {
 
     let pdf_file = input_file.with_extension("pdf");
     let mut cmd = Command::new("pdfcrop");
-    cmd.arg(pdf_file)
-        .arg(output_file);
+    cmd.arg(pdf_file).arg(output_file);
     let output = cmd.output()?;
     if !output.status.success() {
         return Err(io::Error::new(
@@ -65,10 +67,7 @@ fn compile_latex_file(input_file: &Path, output_file: &Path) -> io::Result<()> {
 
 fn convert_pdf_to_svg(input_file: &Path, output_file: &Path) -> io::Result<()> {
     let mut cmd = Command::new("dvisvgm");
-    cmd.arg("--pdf")
-        .arg(input_file)
-        .arg("-o")
-        .arg(output_file);
+    cmd.arg("--pdf").arg(input_file).arg("-o").arg(output_file);
 
     let output = cmd.output()?;
     if !output.status.success() {
@@ -91,11 +90,12 @@ use resvg::usvg_text_layout::{fontdb, TreeTextToPath};
 // TODO fix all that fucked up full paths
 // TODO: ALSO FIX ERROR HANDLING HERE
 fn convert_svg_to_png(input_file: &Path, output_file: &Path) -> io::Result<()> {
-    let mut opt = resvg::usvg::Options::default();
-    // Get file's absolute directory.
-    opt.resources_dir = std::fs::canonicalize(input_file)
-        .ok()
-        .and_then(|p| p.parent().map(|p| p.to_path_buf()));
+    let opt = resvg::usvg::Options {
+        resources_dir: std::fs::canonicalize(input_file)
+            .ok()
+            .and_then(|p| p.parent().map(|p| p.to_path_buf())),
+        ..Default::default()
+    };
 
     let mut fontdb = fontdb::Database::new();
     fontdb.load_system_fonts();
@@ -105,7 +105,8 @@ fn convert_svg_to_png(input_file: &Path, output_file: &Path) -> io::Result<()> {
     tree.convert_text(&fontdb);
 
     let pixmap_size = tree.size.to_screen_size();
-    let mut pixmap = resvg::tiny_skia::Pixmap::new(pixmap_size.width(), pixmap_size.height()).unwrap();
+    let mut pixmap =
+        resvg::tiny_skia::Pixmap::new(pixmap_size.width(), pixmap_size.height()).unwrap();
     resvg::render(
         &tree,
         resvg::usvg::FitTo::Original,
@@ -113,15 +114,13 @@ fn convert_svg_to_png(input_file: &Path, output_file: &Path) -> io::Result<()> {
         pixmap.as_mut(),
     )
     .unwrap();
-println!("output_file: {:?}", output_file);
+    println!("output_file: {:?}", output_file);
     pixmap.save_png(output_file).unwrap();
     Ok(())
 }
 
-
-pub fn render_formula(formula: &str, out_path: &Path) -> io::Result<()> {
+pub fn render_formula(formula: &str, out_path: &Path) -> io::Result<PathBuf> {
     let tmp_dir = tempdir()?;
-    // TODO REPLACE WITH UUID AS NAME
     let filename = format!("{}", uuid::Uuid::new_v4());
     let filename_tex = format!("{}.tex", filename);
     let filename_pdf = format!("{}.pdf", filename);
@@ -138,5 +137,5 @@ pub fn render_formula(formula: &str, out_path: &Path) -> io::Result<()> {
     convert_pdf_to_svg(&pdf_file, &svg_file)?;
     convert_svg_to_png(&svg_file, &png_file)?;
 
-    Ok(())
+    Ok(png_file)
 }

@@ -13,8 +13,8 @@ use url::Url;
 
 mod anki;
 mod io;
-mod parser;
 mod latex;
+mod parser;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -30,8 +30,10 @@ struct Cli {
 }
 
 fn main() -> Result<()> {
-    latex::render_formula("\\sum_{i=1}^n i = \\frac{n\\cdot(n+1)}{2}", &Path::new("."))?;
-    /*
+    latex::require_executable("pdflatex");
+    latex::require_executable("pdfcrop");
+    latex::require_executable("dvisvgm");
+    latex::render_formula("f(x) = x", &PathBuf::from("."))?;
     let mut replacements = HashMap::new();
     let cli = Cli::parse();
 
@@ -116,6 +118,5 @@ fn main() -> Result<()> {
         }
         None => package.write_to_file("output.apkg")?,
     }
-    */
     Ok(())
 }
