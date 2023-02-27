@@ -4,8 +4,9 @@ use regex::Regex;
 
 lazy_static! {
     static ref COMRAK_OPTIONS: ComrakOptions = {
-        // TODO SET OPTIONS
-        ComrakOptions::default()
+        let mut options = ComrakOptions::default();
+        options.extension.table = true;
+        options
     };
 }
 
