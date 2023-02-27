@@ -45,7 +45,10 @@ fn main() -> Result<()> {
         .map(|(filename, cards)| {
             (
                 filename,
-                cards.into_iter().map(Card::into_html).collect::<Vec<Card>>(),
+                cards
+                    .into_iter()
+                    .map(Card::into_html)
+                    .collect::<Vec<Card>>(),
             )
         })
         .map(|(filename, cards)| {
@@ -63,9 +66,7 @@ fn main() -> Result<()> {
             (filename, cards)
         })
         // Convert to Ankideck
-        .map(|(filename, cards)| {
-            anki::from_cards(&filename, &cards, cli.dark_mode)
-        })
+        .map(|(filename, cards)| anki::from_cards(&filename, &cards, cli.dark_mode))
         .collect::<Vec<genanki_rs::Deck>>();
 
     // Download all files and collect them
@@ -101,7 +102,8 @@ fn main() -> Result<()> {
         // TODO duplication with file handler finding markdown files
         Some(path) => {
             if path.is_dir() {
-                let output_path = format!("{}{}output.apkg", path.to_str().unwrap(), MAIN_SEPARATOR);
+                let output_path =
+                    format!("{}{}output.apkg", path.to_str().unwrap(), MAIN_SEPARATOR);
                 package.write_to_file(&output_path)?;
             } else if path.parent().unwrap().is_dir() {
                 package.write_to_file(path.as_os_str().to_str().unwrap())?;

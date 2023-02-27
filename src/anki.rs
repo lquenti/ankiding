@@ -14,7 +14,7 @@ const FRONT_SIDE_TEMPLATE: &str = include_str!("../assets/templates/front.html")
 const BACK_SIDE_TEMPLATE: &str = include_str!("../assets/templates/back.html");
 
 lazy_static! {
-    static ref BASE_MODEL: Model  = Model::new(
+    static ref BASE_MODEL: Model = Model::new(
         0x1337420,
         "Ankiding Model",
         vec![Field::new("Question"), Field::new("Answer"),],
