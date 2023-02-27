@@ -20,6 +20,7 @@ fn create_latex_file(formula: &str, filename: &Path) -> io::Result<()> {
     writeln!(file, "\\documentclass{{standalone}}")?;
     writeln!(file, "\\usepackage{{amsmath}}")?;
     writeln!(file, "\\begin{{document}}")?;
+    writeln!(file, "\\Huge")?;
     writeln!(file, "${}$", formula)?;
     writeln!(file, "\\end{{document}}")?;
     Ok(())
