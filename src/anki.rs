@@ -7,24 +7,26 @@ use genanki_rs::{Deck, Field, Model, Note, Template};
 use lazy_static::lazy_static;
 use rand::Rng;
 
-const DEFAULT_ANKI_CSS: &str = include_str!("../assets/templates/base.css");
+const LIGHT_MODE_CSS: &str = include_str!("../assets/templates/light.css");
+const DARK_MODE_CSS: &str = include_str!("../assets/templates/dark.css");
 
 const FRONT_SIDE_TEMPLATE: &str = include_str!("../assets/templates/front.html");
 const BACK_SIDE_TEMPLATE: &str = include_str!("../assets/templates/back.html");
 
 lazy_static! {
-    static ref ANKI_MODEL: Model = Model::new(
+    static ref BASE_MODEL: Model  = Model::new(
         0x1337420,
         "Ankiding Model",
         vec![Field::new("Question"), Field::new("Answer"),],
         vec![Template::new("Card 1")
             .qfmt(FRONT_SIDE_TEMPLATE)
             .afmt(BACK_SIDE_TEMPLATE)],
-    )
-    .css(DEFAULT_ANKI_CSS);
+    );
+    static ref LIGHT_MODEL: Model = BASE_MODEL.clone().css(LIGHT_MODE_CSS);
+    static ref DARK_MODEL: Model = BASE_MODEL.clone().css(DARK_MODE_CSS);
 }
 
-pub fn from_cards(filename: &Path, cards: &[Card]) -> Deck {
+pub fn from_cards(filename: &Path, cards: &[Card], use_dark_mode: bool) -> Deck {
     let deck_name = filename
         .to_str()
         .unwrap()
@@ -38,8 +40,12 @@ pub fn from_cards(filename: &Path, cards: &[Card]) -> Deck {
         Local::now().format("%Y-%m-%d %H:%M:%S")
     );
     let mut deck = Deck::new(deck_id, &deck_name, &desc);
+    let model = match use_dark_mode {
+        true => DARK_MODEL.clone(),
+        false => LIGHT_MODEL.clone(),
+    };
     for card in cards {
-        let note = Note::new(ANKI_MODEL.clone(), vec![&card.front, &card.back]).unwrap();
+        let note = Note::new(model.clone(), vec![&card.front, &card.back]).unwrap();
         deck.add_note(note);
     }
     deck

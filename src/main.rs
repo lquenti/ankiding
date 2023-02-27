@@ -23,6 +23,9 @@ struct Cli {
     /// The path to the output file
     #[arg(short, long)]
     output: Option<PathBuf>,
+    /// Whether to use dark mode
+    #[arg(long, default_value_t = false)]
+    dark_mode: bool,
 }
 
 fn main() -> Result<()> {
@@ -61,7 +64,7 @@ fn main() -> Result<()> {
         })
         // Convert to Ankideck
         .map(|(filename, cards)| {
-            anki::from_cards(&filename, &cards)
+            anki::from_cards(&filename, &cards, cli.dark_mode)
         })
         .collect::<Vec<genanki_rs::Deck>>();
 
@@ -101,7 +104,8 @@ fn main() -> Result<()> {
                 let output_path =
                     format!("{}{}output.apkg", path.to_str().unwrap(), MAIN_SEPARATOR);
                 package.write_to_file(&output_path)?;
-            } else if path.is_file() {
+            } else if path.is_file() { 
+                // TODO: This doesnt work when the file not exists before
                 package.write_to_file(path.to_str().unwrap())?;
             } else {
                 panic!("Path is neither a file nor a directory");
