@@ -14,6 +14,7 @@ use url::Url;
 mod anki;
 mod io;
 mod parser;
+mod latex;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
