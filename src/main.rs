@@ -30,7 +30,7 @@ struct Cli {
 }
 
 fn main() -> Result<()> {
-    latex::render_formula("\\sum_{i=1}^n i = \\frac{n\\cdot(n+1)}{2}", &Path::new("./test.png"))?;
+    latex::render_formula("\\sum_{i=1}^n i = \\frac{n\\cdot(n+1)}{2}", &Path::new("."))?;
     /*
     let mut replacements = HashMap::new();
     let cli = Cli::parse();

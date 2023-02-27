@@ -30,8 +30,8 @@ fn compile_latex_file(input_file: &Path, output_file: &Path) -> io::Result<()> {
     cmd.current_dir(input_file.parent().unwrap());
     cmd.arg(input_file);
 
+    // TODO logging
     let output = cmd.output()?;
-    println!("pdflatex output: {}", String::from_utf8_lossy(&output.stdout));
     if !output.status.success() {
         return Err(io::Error::new(
             io::ErrorKind::Other,
@@ -44,7 +44,6 @@ fn compile_latex_file(input_file: &Path, output_file: &Path) -> io::Result<()> {
     }
 
     let pdf_file = input_file.with_extension("pdf");
-    println!("pdf file: {:?}", pdf_file);
     let mut cmd = Command::new("pdfcrop");
     cmd.arg(pdf_file)
         .arg(output_file);
@@ -113,6 +112,7 @@ fn convert_svg_to_png(input_file: &Path, output_file: &Path) -> io::Result<()> {
         pixmap.as_mut(),
     )
     .unwrap();
+println!("output_file: {:?}", output_file);
     pixmap.save_png(output_file).unwrap();
     Ok(())
 }
@@ -121,11 +121,16 @@ fn convert_svg_to_png(input_file: &Path, output_file: &Path) -> io::Result<()> {
 pub fn render_formula(formula: &str, out_path: &Path) -> io::Result<()> {
     let tmp_dir = tempdir()?;
     // TODO REPLACE WITH UUID AS NAME
-    let tmp_file = tmp_dir.path().join("formula.tex");
-    let pdf_file = tmp_dir.path().join("formula.pdf");
-    let svg_file = tmp_dir.path().join("formula.svg");
-    // TODO Check if the png extension is there
-    let png_file = out_path;
+    let filename = format!("{}", uuid::Uuid::new_v4());
+    let filename_tex = format!("{}.tex", filename);
+    let filename_pdf = format!("{}.pdf", filename);
+    let filename_svg = format!("{}.svg", filename);
+    let filename_png = format!("{}.png", filename);
+    let tmp_file = tmp_dir.path().join(filename_tex);
+    let pdf_file = tmp_dir.path().join(filename_pdf);
+    let svg_file = tmp_dir.path().join(filename_svg);
+    // TODO Check if it is an directory
+    let png_file = out_path.join(filename_png);
 
     create_latex_file(formula, &tmp_file)?;
     compile_latex_file(&tmp_file, &pdf_file)?;
