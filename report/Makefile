@@ -26,6 +26,8 @@ build: clean
 	cp -r ../$(SRC_FOLDER)/* . && \
 	$(TEX) $(PACKAGE_NAME).tex && \
 	$(TEX) $(PACKAGE_NAME).tex && \
+	biber $(PACKAGE_NAME) && \
+	$(TEX) $(PACKAGE_NAME).tex && \
 	cd .. && \
 	cp $(BUILD_FOLDER)/$(PACKAGE_NAME).pdf .
 	echo "🥳 PDF successfully built! 🥳"
