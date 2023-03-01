@@ -29,23 +29,37 @@ struct Cli {
     dark_mode: bool,
 }
 
-fn main() -> Result<()> {
+fn dynamic_dependency_check() {
     latex::require_executable("pdflatex");
     latex::require_executable("pdfcrop");
     latex::require_executable("dvisvgm");
-    latex::render_formula("f(x) = x", &PathBuf::from("."))?;
-    let mut replacements = HashMap::new();
+}
+
+fn get_all_cards(path: PathBuf) -> Result<Vec<(PathBuf, Vec<Card>)>> {
+    let filenames = io::get_all_filenames(path)?;
+    
+    let res = io::get_all_filenames(path)?
+    .into_iter()
+    .map(|filename| {
+        let markdowns = io::read_file_to_string(&filename).unwrap();
+        (filename, markdowns)
+    })
+    // Convert to cards
+    .map(|(filename, markdowns)| (filename, Card::from_markdown(&markdowns)))
+    .collect();
+    Ok(res)
+}
+
+fn main() -> Result<()> {
+    dynamic_dependency_check();
+
+    //let mut replacements = HashMap::new();
     let cli = Cli::parse();
 
-    let decks = io::get_all_files(cli.path)?
-        .into_iter()
-        // Read files
-        .map(|filename| {
-            let markdowns = io::read_file_to_string(&filename).unwrap();
-            (filename, markdowns)
-        })
-        // Convert to cards
-        .map(|(filename, markdowns)| (filename, Card::from_markdown(&markdowns)))
+    let pathbuf_card_vector = get_all_cards(cli.path);
+
+    /*
+    let decks = pathbuf_card_vector
         // Convert to html
         .map(|(filename, cards)| {
             (
@@ -118,5 +132,6 @@ fn main() -> Result<()> {
         }
         None => package.write_to_file("output.apkg")?,
     }
+    */
     Ok(())
 }

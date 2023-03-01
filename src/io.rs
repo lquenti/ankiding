@@ -24,7 +24,7 @@ pub fn find_all_files_by_extension(
     Ok(paths)
 }
 
-pub fn get_all_files(path: PathBuf) -> Result<Vec<PathBuf>> {
+pub fn get_all_filenames(path: PathBuf) -> Result<Vec<PathBuf>> {
     if path.is_file() {
         Ok(vec![path])
     } else if path.is_dir() {
