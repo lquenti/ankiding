@@ -215,7 +215,9 @@ Im folgenden wird eine Taxonomie der Konvertierungmöglichkeiten vorgestellt:
     Konvertierungsmöglichkeiten existieren.
 \end{itemize}
 
-In unserem Fall haben wir uns für \texttt{dvisvgm} entschieden. Es ist eine kleine Laufzeitabhängigkeit, ist jedoch in jeder kompletten TeXLive- sowie MikTeX-Installation vorhanden. Dies bedeutet, dass wir keine Abhängigkeiten haben, welche nicht auch von Anki vorrausgesetzt werden. Die von \texttt{dvisvgm} erstellen SVG-Grafiken werden dann durch \texttt{resvg} \cite{resvg} zu PNG exportiert.
+In unserem Fall haben wir uns für \texttt{dvisvgm} entschieden. Es ist eine kleine Laufzeitabhängigkeit, ist jedoch in jeder kompletten TeXLive- sowie MikTeX-Installation vorhanden. Dies bedeutet, dass wir keine Abhängigkeiten haben, welche nicht auch von Anki vorrausgesetzt werden. Die von \texttt{dvisvgm} erstellen SVG-Grafiken werden dann durch \texttt{resvg} \cite{resvg} zu PNG exportiert.\\
+
+Als Syntax wurde sich für \texttt{\$f(x) = x\$} für Inline-\LaTeX und \texttt{\$\$f(x)=x\$\$} für Display-\LaTeX entschieden. Dies entspricht auch der KaTeX-Syntax, welche sowohl von HedgeDoc, als auch von GitHub oder GitLab genutzt wird.
 
 \subsection{Commitbasierte Kartengeneration durch Continuous Integration (CI)}
 Im Rahmen der Continuous Integration (CI) Softwarepraktik bieten alle großen Git-Repository-Hostinganbieter sogenannte Workflows an. Hierbei wird zu spezifischen Events wie Commits oder Pull Requests ein Container ausgeführt, welcher automatisiert Aufgaben erfüllen kann. Unter den typischen Aufgaben von CI zählen das Analysieren von Source Code nach Best Practises, dem sogenannten linting, der Ausführung automatisierter Tests sowie der Erstellung von Kompilaten.\\
@@ -239,9 +241,15 @@ In unserem Fall ermöglichen wir durch die Nutzung von CI-Workflows eine automat
   \item Das resultierende Karteikartenarchiv wird als Artifact den Nutzern bereitgestellt.
 \end{enumerate}
 
-\section{Implementation}
-\subsection{Offlineunterst\"utzung}
-\subsection{\LaTeX-Unterst\"utzung}
+\section{Funktionsweise}
+Die Funktionweise ist in mehrere, disjunkte Schritte aufgeteilt, welche im folgenden betrachtet werden:
+\begin{enumerate}
+  \item \textbf{Markdownkarteikarten Einlesen:} Innerhalb des per Programmargument übergebenen Pfades werden rekursiv nach allen Dateien gesucht, welche eine \texttt{.anki.md} Dateiendung haben. Alle gefundenen Dateien werden eingelesen und aus ihnen werden alle nach vorherig definierter Syntax geschriebenen Karteikarten extrahiert.
+  \item \textbf{Formeln durch Bilder ersetzen:} Um wie bereits beschrieben die Mobilunterstützung zu sichern werden bereits zur Erstellung der Decks alle \LaTeX-Formeln zu PNG-Bildern umgewandelt, welche dann in normaler Markdownsyntax als Ersatz der Formel eingesetzt werden.
+  \item \textbf{Bilder lokal speichern:} Um die Möglichkeit der Offlinenutzung zu ermöglichen, werden sämtliche extern referenzierten Bilder lokal gespeichert.
+  \item \textbf{Markdownkarteikarten in HTML umwandeln:} Mit der \texttt{comrak}-Bibliothek \cite{comrak} werden die Markdownkarteikarten in äquivalente HTML-Dokumente umgewandelt.
+  \item \textbf{HTML-Karteikarten und Bilder in Anki-Archiv speichern:} Die generierten Karteikarten werden nun als Ankideckarchiv gespeichert. Die interne Struktur entspricht hierbei der genutzten Ordnerstruktur.
+\end{enumerate}
 \section{Diskussion}
 \subsection{Audio- und Videounterst\"utzung}
 \subsection{Geplante Weiterentwicklung und Einsatz der Software}
