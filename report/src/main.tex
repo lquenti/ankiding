@@ -47,15 +47,152 @@ Im Rahmen dieses Praktikums wurden mehrere Beiträge geleistet, um die gesteckte
 Darüber hinaus wurde ein Tool erstellt, das automatisch aus einem Ordner mit Markdown-Dateien ein Ankideck erstellen kann \cite{Ankiding}. Hierbei wird die Ordnerstruktur auf die Struktur der Ankidecks übertragen, und es wird sämtliche Markdown Syntax sowie das Rendering von \LaTeX-Formeln unterstützt. Das Tool kann auch mit der Mobilversion von Anki genutzt werden. Zudem kann mit dem Ankideck offline gelernt werden, da alle verlinkten Bilder in das Deckarchiv gespeichert werden. Weitere Features wie ein Darkmode wurden ebenfalls implementiert.\\
 
 Zuletzt wurden Git-Repository-Templates für GitLab \cite{GitlabTemplate} und GitHub \cite{GithubTemplate} konzipiert und erstellt, mit denen automatisch via Continuous Integration nach jedem Commit ein aktualisiertes Ankideckarchiv erstellt wird. Dies ermöglicht die Erstellung von Ankikarten ohne Installation von Software oder technischem Verständnis des Konvertierungsprozesses.
+
+\newpage
+
+
 \section{Softwarekonzeptionierung und Methodologie}
 \subsection{Entwurf einer Markdownerweiterung}
-% - Welche möglichen Markdownstandards
-%   - Wir basieren auf CommonMark
-%   - Aber Unsere targets => GFM, GLFM, HFM
-%     - Somit bleibt unsere Syntax damit kompatibel
-% - Verschiedene Ansätze wie Tabellen auch aufnehmen
-%   - Bilder wie es gerendered wurde
-% - Comparison Matrix
+Markdown ist zwar sehr verbreitet, jedoch gibt es keine universale Markdownspezifikation. Stattdessen gibt es viele verschiedene Varianten, welche leicht aber inkompatibel voneinander abweichen. Somit, bevor man den Markdownstandard erweitern kann, muss ein Markdownstandard spezifiziert werden.
+
+Für den Anwendungsfall dieses Praktikums wird als Basis der am weitesten verbreite CommonMark \cite{CommonMark} Standard genommen. Dieser ist sehr simpel, jedoch von den meisten Implementationen unterstützt. Insbesondere ist er zu den meisten größeren Standards kompatibel.
+
+Desweiteren soll der hier entwickelte Karteikarten-Standard auch mit folgenden Markdownstandards kompatibel sein:
+\begin{itemize}
+  \item \textbf{GitHub Flavored Markdown (GFM) \cite{GFM}:} Benötigt für die automatische Kartengenerierung über Githubrepositories.
+  \item \textbf{GitLab Flavored Markdown (GLFM) \cite{GLFM} :} Benötigt für die automatische Kartengenerierung über Gitlabrepositories.
+  \item \textbf{HedgeDoc Flavored Markdown 2.0 (HFM 2.0) \cite{HFM2}:} Benötigt zum kollaborativen Erstellen von Karteikarten über die Hedgedoc-Infrastruktur der GWDG \cite{HedgeDocGWDG}.
+\end{itemize}
+
+Somit, aufbauend auf CommonMark, wird im Rahmen dieses Praktikums ein Standard für \texttt{.anki.md}-Dateien definiert. Der Standard hat folgende Ziele:
+\begin{itemize}
+  \item Eindeutige Parsebarkeit
+  \item Renderunterstützung in GitHub, GitLab sowie HedgeDoc
+  \item Einfache Syntax, welche sich manuell mit wenig Extraaufwand schreiben lässt
+  \item Gute Lesbarkeit in Codeform
+  \item Keine Kollisionen mit normalem Text; keine falschen positiven Erkennungen
+\end{itemize}
+
+Die unsterstützte Karteikartensyntax funktioniert wiefolgt:
+\begin{figure}[H]
+\centering
+\begin{lstlisting}
+> Q: Dies ist eine Frage
+>
+> Sie kann ueber mehrere Zeilen gehen
+>
+> A: Das ist die Antwort
+>
+> Auch hier kann man mehrere Zeilen haben
+>
+> Oder **sogar** die komplette Markdownsyntax nutzen
+\end{lstlisting}
+  \caption{Ein Beispiel der genutzten Karteikartensyntax}
+\end{figure}
+In den verschiedenen Umgebungen sieht es wiefolgt aus:
+
+\begin{figure}[H]
+\centering
+\begin{tabular}{ccc}
+\includegraphics[width=50mm]{./figures/GH_Syntax1} & \includegraphics[width=50mm]{./figures/GL_Syntax1} & \includegraphics[width=50mm]{./figures/HD_Syntax1} \\
+GitHub & GitLab & HedgeDoc \\
+\end{tabular}
+\caption{Rendering der in Abb. 1 definierten Syntax}
+\end{figure}
+
+Als Alternativansätze wurden folgende Syntaxmöglichkeiten betrachtet:
+
+\paragraph{Durch Horizontallinien getrennte Karteikartenseiten:}~\\
+Diese Syntax würde wiefolgt aussehen:
+\begin{figure}[H]
+\centering
+\begin{lstlisting}
+---
+Q: Dies ist eine Frage
+
+Sie kann ueber mehrere Zeilen gehen
+---
+A: Das ist eine Antwort
+
+Auch hier kann man mehrere Zeilen haben
+
+Oder **sogar** die komplette Markdownsyntax nutzen
+---
+\end{lstlisting}
+  \caption{Ein Beispiel einer alternativen Karteikartensyntax}
+\end{figure}
+
+Während diese Syntax sehr leserlich in Markdownform sowie sehr einfach zu schreiben ist, hat sie mehrere Probleme.
+
+Zu aller erst kann diese Syntax nicht in der ersten Zeile benutzt werden, da es dann Kollisionen mit dem sogenannten Front Matter gibt; ein auf YAML basierendes Metadatenformat innerhalb der Markdowndatei. Front Matter wird sowohl von GFM, GLFM als auch HFM unterstützt.\\
+
+Zudem ist es sehr einfach syntaktische Fehler zu machen, da es sehr einfach passieren kann die letzte horizontale Linie zu setzen.\\
+
+Zuletzt ist das visuelle Rendering sehr unintuitiv, insbesondere da ohne freie Zeile die horizontale Linie in eine Überschrift umgewandelt wird
+
+\begin{figure}[H]
+\centering
+\begin{tabular}{ccc}
+\includegraphics[width=50mm]{./figures/GH_Syntax2} & \includegraphics[width=50mm]{./figures/GL_Syntax2} & \includegraphics[width=50mm]{./figures/HD_Syntax2} \\
+GitHub & GitLab & HedgeDoc \\
+\end{tabular}
+\caption{Rendering der in Abb. 3 definierten Syntax}
+\end{figure}
+
+\paragraph{Karteikarten in Tabellenform:}~\\
+Diese Syntax würde wiefolgt aussehen:
+\begin{figure}[H]
+%\centering
+  \begin{lstlisting}
+| Question                       | Answer                              |
+| ------------------------------ | ------------------------------------|
+| Wofuer steht DFA?              | Deterministischer endlicher Automat |
+| Welche Laufzeit hat Quicksort durchschnittlich? | O(n log n)         |
+\end{lstlisting}
+  \caption{Beispiel für eine tabellenbasierte Karteikartensyntax}
+\end{figure}
+
+Diese Syntax sieht gerendert sehr schön aus.
+
+\begin{figure}[H]
+\centering
+\begin{tabular}{ccc}
+  \includegraphics[width=0.5\textwidth]{./figures/GH_Syntax3} &
+  \includegraphics[width=0.5\textwidth]{./figures/GL_Syntax3}\\
+GitHub & GitLab\\
+\end{tabular}
+  \includegraphics[width=0.5\textwidth]{./figures/HD_Syntax3} \\
+  HedgeDoc
+\caption{Rendering der in Abb. 5 definierten Syntax}
+\end{figure}
+
+Jedoch hat auch diese Syntax mehrere Nachteile. Zu aller erst eignet sich diese Syntax nicht für die Anwendung durch literate Programming, da hierdurch nur viele einzeilige Tabellen zwischen dem Text entstehen würden. Zudem ist diese Art von Syntax sehr aufwändig für den Endnutzer, sofern dieser kein WYSIWYG-Editor nutzt. Zuletzt ist eine Zelle viel zu restriktiv. Es ist weder möglich, eine Antwort über mehrere Zeilen zu definieren, noch ist es möglich sinnvoll Bilder einzubinden.
+
+\paragraph{Karteikarten durch XML Objekte:}~\\
+Diese Syntax würde wiefolgt aussehen:
+\begin{figure}[H]
+\centering
+\begin{lstlisting}
+<anki>
+  <q>
+    Dies ist eine Frage
+
+    Sie kann ueber mehrere Zeilen gehen
+  </q>
+  <a>
+    Dies ist die Antwort
+
+    Auch hier kann man mehrere Zeilen haben
+
+    Oder sogar die komplette Markdownsyntax nutzen
+  </a>
+</anki>
+\end{lstlisting}
+  \caption{Beispiel für eine XML-basierte Karteikartensyntax}
+\end{figure}
+
+Der Inhalt hiervon wird leider von Github gar nicht gerendered, weswegen es für unseren Anwendungsfall nicht nutzbar ist. In GitLab sowie HedgeDoc werden die Tags auch nicht angezeigt, jedoch ist zumindest der Inhalt noch sichtbar.
+
 \subsection{Unterst\"utzung von \LaTeX-Formeln}
 \subsection{Commitbasierte Kartengeneration durch Continuous Integration (CI)}
 \section{Implementation}
@@ -63,7 +200,7 @@ Zuletzt wurden Git-Repository-Templates für GitLab \cite{GitlabTemplate} und Gi
 \subsection{\LaTeX-Unterst\"utzung}
 \section{Diskussion}
 \subsection{Audio- und Videounterst\"utzung}
-\subsection{Geplante Weiterentwicklung}
+\subsection{Geplante Weiterentwicklung und Einsatz der Software}
 \newpage
 \section{Literaturverzeichnis}
 \printbibliography
