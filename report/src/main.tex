@@ -40,7 +40,13 @@ Literate Programming ist ein Konzept, das von Donald E. Knuth entwickelt wurde \
 Moderne Umsetzungen von Literate Programming sind Jupyter Notebooks \cite{Jupyter}. Jupyter Notebooks sind interaktive Dokumente, die Code, Markdowntext und Medien durch sogenannte Zellen in einem Dokument vereinigen. Da Jupyter Notebooks ohne explizite Programmierumgebung gehosted in einem Webbrowser, zum Beispiel via GWDG Jupyter Hub \cite{JupyterGWDG} oder Google Colab \cite{Colab}, benutzbar sind haben sie eine geringe Einstiegshürde. Hierdurch sind sie interdisziplinär in der Forschung omnipräsent. Sie implementieren das Konzept von Literate Programming, indem man den Code als Teil des Dokumentes betrachtet statt als isolierte Einheit.
 
 \subsection{Ziele und Beitr\"age}
-\subsection{Struktur}
+Das Ziel dieser Arbeit ist, analog zum Konzept des literate Programmings, Karteikarten in Markdownzusammenfassungen zu integrieren. Hierdurch wird es möglich, das gesamte Markdown-Ökosystem zum Erstellen, Bearbeiten und Versionieren der Karteikarten zu nutzen. Einerseits ermöglicht dies, dass Karteikarten den Kontext und die Reihenfolge behalten, welche für das Lernen komplexer Themen erforderlich ist. Andererseits soll ein automatischer Anki-Export erstellt werden, der die Nutzung von Spaced Repitition für ein effizienteres Lernen von Fakten ermöglicht.\\
+
+Im Rahmen dieses Praktikums wurden mehrere Beiträge geleistet, um die gesteckten Ziele zu erreichen. Zunächst wurde ein neuer Dateistandard für \texttt{.anki.md} Dateien entwickelt, um die Integration von Karteikarten in Markdownzusammenfassungen zu ermöglichen.
+
+Darüber hinaus wurde ein Tool erstellt, das automatisch aus einem Ordner mit Markdown-Dateien ein Ankideck erstellen kann \cite{Ankiding}. Hierbei wird die Ordnerstruktur auf die Struktur der Ankidecks übertragen, und es wird sämtliche Markdown Syntax sowie das Rendering von \LaTeX-Formeln unterstützt. Das Tool kann auch mit der Mobilversion von Anki genutzt werden. Zudem kann mit dem Ankideck offline gelernt werden, da alle verlinkten Bilder in das Deckarchiv gespeichert werden. Weitere Features wie ein Darkmode wurden ebenfalls implementiert.\\
+
+Zuletzt wurden Git-Repository-Templates für GitLab \cite{GitlabTemplate} und GitHub \cite{GithubTemplate} konzipiert und erstellt, mit denen automatisch via Continuous Integration nach jedem Commit ein aktualisiertes Ankideckarchiv erstellt wird. Dies ermöglicht die Erstellung von Ankikarten ohne Installation von Software oder technischem Verständnis des Konvertierungsprozesses.
 \section{Softwarekonzeptionierung und Methodologie}
 \subsection{Entwurf einer Markdownerweiterung}
 % - Welche möglichen Markdownstandards
