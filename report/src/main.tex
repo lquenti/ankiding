@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass[ngerman]{article}
 
 \input{cfg/packages.tex}
 \input{cfg/commands.tex}
@@ -14,8 +14,31 @@ Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod 
 
 
 \section{Einführung}
-test! \cite{example}
 \subsection{Motivation}
+Das Problem des Lernens, insbesondere in universitären Bereich, lässt sich in zwei distinkte Kategorien aufteilen: Das verständnisorienterte Lernen komplexer Themen und das faktenbasierte Lernen kleiner Details. Obwohl die meisten Klausuren eine Mischung aus den beiden Kategorien darstellen, erfordert jede Art unterschiedliche Vorgehensweisen:
+
+\begin{itemize}
+\item Im Falle verständnisbasierter komplexer Themen können Lernzettel geschrieben werden, indem Informationen zusammengefasst und umformuliert werden. Dies resultiert in immer noch großen komplexen Texten oder Stichpunktlisten, in welchen die einzelnen Informationen sehr nah miteinander verbunden sind. Die einzelnen Themen sind weniger isoliert, das erwartete Detailwissen ist geringer. Diese Klasse an Themen ist typisch für logisch-orientierte Studiengänge, wie z.B. Mathematik, Philosophie, Informatik oder Physik.
+\item Im Gegensatz dazu erfordert das Lernen von faktenbasierten Details viel Auswendiglernen und wird meistens über Karteikarten praktiziert. Dieser Ansatz ist typisch für Studiengänge mit einem hohen Lernvolumen, wie z.B. Medizin, Biologie oder Sprachwissenschaften. Allgemein findet sich diese Problemart oft in komplexen, nicht-menschengemachten Systemen wieder.
+\end{itemize}
+
+Im digitalen Bereich gibt es für beide Arten von Klausurlernen kanonische Lösungen:
+\begin{itemize}
+  \item \textbf{Lernzettel:} Insbesondere in der Informatik wird für Lernzettel immer häufiger Markdown \cite{Markdown} verwendet. Markdown ist eine einfache, aber leistungsstarke Markup-Sprache, die einige Vorteile bietet: Zum einen kann sie ohne spezielle Software direkt von Menschen geschrieben werden, zum anderen ist sie einfach parsebar, wodurch sie mit vielen Tools genutzt werden kann. Zudem kann Markdown durch die simple, zeilenbasierte Struktur mit Git versioniert werden. Es unterstützt simple Medien wie Tabellen, Bilder und \LaTeX-Formeln, was es für die meisten Anwendungsfälle expressiv genug macht. Es gibt auch Tools wie Hedgedoc \cite{HedgeDoc} zum kollaborativen Live-Editieren, welches unter anderem auch als Instanz von der GWDG gehosted wird \cite{HedgeDocGWDG}. Es ist einfach, Markdown durch Applikationen wie Pandoc \cite{Pandoc} in HTML oder RevealJS-Presentationsfolien \cite{RevealJS} via Hedgedoc zu exportieren.
+  \item \textbf{Karteikarten:} Digitale Karteikarten werden häufig mit sogenannten Spaced-Repitition Systemen (SRS) genutzt. Ein SRS ist ein Lernsystem, das Lernaufwand minimiert, indem es die Zeit zur nächsten Wiederholung der Frage auf Basis der bisherigen Kartenhistorie sowie der Selbsteinschätzung der Schwierigkeit anpasst. Das bedeutet, dass Fragen, die man leicht beantworten kann, seltener wiederholt werden als schwierigere Fragen, mit welchen man auch historisch bereits Probleme hatte.\\
+    Das bei weitem beliebteste SRS ist Anki \cite{Anki}, ein Open-Source-Programm \cite{AnkiGithub}, das durch eine iOS-App \cite{AnkiiOS} finanziert wird. Es basiert auf Chromium \cite{QTWebEngine} und hat somit einen hohen Mediensupport. Anki bietet einen kostenlosen Cloud-Sync \cite{AnkiCloud}, der es ermöglicht, Karteikarten auf verschiedenen Geräten zu synchronisieren. Darüber hinaus gibt es eine kostenlose, von der Community erstellte Androidversion. Anki hat auch eine große Bibliothek von Decks, die von der Community geteilt werden, sowie PlugIns-Support \cite{AnkiPlugins}, die es Benutzern ermöglicht, die Funktionalität von Anki zu erweitern.
+\end{itemize}
+
+Trotz der Vorteile, die sowohl Lernzettel als auch Karteikarten bieten, haben sie auch ihre Nachteile. Lernzettel sind ineffizient, wenn es darum geht, Details zu lernen, da sie oft sehr verbos sind und eine geringere Informationsdichte haben. Darüber hinaus kann man keinen expliziten Fokus auf Themen setzen, welche einem besonders schwerfallen, da der Text sich nicht so einfach in atomare Fakten aufteilen lässt. Auf der anderen Seite verlieren Karteikarten schnell ihre Reihenfolge. Zuletzt kann man zwischen Karteikarten keinen Kontext erhalten, welcher gegebenenfalls benötigt wird um das größere Konzept zu verstehen.
+
+\newpage
+
+In diesem Praktikumsbericht wird eine Lösung vorgestellt, Lernzettel mit Markdown und und Karteikarten mit Anki logisch zu verbinden. Die Idee basiert auf dem Konzept von literate Programming.\\
+
+Literate Programming ist ein Konzept, das von Donald E. Knuth entwickelt wurde \cite{LitProg}. Es kombiniert Programmcode mit der Dokumentation, so dass der Code und die Dokumentation in einer Datei vereint werden. Die Funktionen sind innerhalb der Dokumentation integriert und die gesamte Dokumentation lässt sich ausführen. Das ursprüngliche Konzept von Literate Programming verwendet eine eigene Sprache namens "WEB", die von Knuth entwickelt wurde. WEB-Quelldateien kompilierten entwedr zu Pascal oder zu \TeX \cite{WebIntroduction}.\\
+
+Moderne Umsetzungen von Literate Programming sind Jupyter Notebooks \cite{Jupyter}. Jupyter Notebooks sind interaktive Dokumente, die Code, Markdowntext und Medien durch sogenannte Zellen in einem Dokument vereinigen. Da Jupyter Notebooks ohne explizite Programmierumgebung gehosted in einem Webbrowser, zum Beispiel via GWDG Jupyter Hub \cite{JupyterGWDG} oder Google Colab \cite{Colab}, benutzbar sind haben sie eine geringe Einstiegshürde. Hierdurch sind sie interdisziplinär in der Forschung omnipräsent. Sie implementieren das Konzept von Literate Programming, indem man den Code als Teil des Dokumentes betrachtet statt als isolierte Einheit.
+
 \subsection{Ziele und Beitr\"age}
 \subsection{Struktur}
 \section{Softwarekonzeptionierung und Methodologie}
@@ -28,13 +51,14 @@ test! \cite{example}
 %   - Bilder wie es gerendered wurde
 % - Comparison Matrix
 \subsection{Unterst\"utzung von \LaTeX-Formeln}
-\subsection{Commitbasierte Kartengeneration via Git Hooks}
+\subsection{Commitbasierte Kartengeneration durch Continuous Integration (CI)}
 \section{Implementation}
 \subsection{Offlineunterst\"utzung}
-\subsection{\LaTeX-Formel Support}
+\subsection{\LaTeX-Unterst\"utzung}
 \section{Diskussion}
-\subsection{Audio- und Videosupport}
+\subsection{Audio- und Videounterst\"utzung}
 \subsection{Geplante Weiterentwicklung}
+\newpage
 \section{Literaturverzeichnis}
 \printbibliography
 \end{document}
