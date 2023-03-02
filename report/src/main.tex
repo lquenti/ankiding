@@ -218,6 +218,27 @@ Im folgenden wird eine Taxonomie der Konvertierungmöglichkeiten vorgestellt:
 In unserem Fall haben wir uns für \texttt{dvisvgm} entschieden. Es ist eine kleine Laufzeitabhängigkeit, ist jedoch in jeder kompletten TeXLive- sowie MikTeX-Installation vorhanden. Dies bedeutet, dass wir keine Abhängigkeiten haben, welche nicht auch von Anki vorrausgesetzt werden. Die von \texttt{dvisvgm} erstellen SVG-Grafiken werden dann durch \texttt{resvg} \cite{resvg} zu PNG exportiert.
 
 \subsection{Commitbasierte Kartengeneration durch Continuous Integration (CI)}
+Im Rahmen der Continuous Integration (CI) Softwarepraktik bieten alle großen Git-Repository-Hostinganbieter sogenannte Workflows an. Hierbei wird zu spezifischen Events wie Commits oder Pull Requests ein Container ausgeführt, welcher automatisiert Aufgaben erfüllen kann. Unter den typischen Aufgaben von CI zählen das Analysieren von Source Code nach Best Practises, dem sogenannten linting, der Ausführung automatisierter Tests sowie der Erstellung von Kompilaten.\\
+
+In unserem Fall ermöglichen wir durch die Nutzung von CI-Workflows eine automatische Erstellung von Ankidecks aus Gitrepositories. Dieser Anwendungszweck ist so gedacht, dass die Nutzerschaft gemeinsam kollaborativ via Git eine Ordnerstruktur an Anki-Markdowndokumenten erstellt. Im Rahmen dieses Praktikums wurden sowohl für GitLab \cite{GitlabTemplate} als auch für GitHub \cite{GithubTemplate} Repositoryvorlagen erstellt. Im folgenden wird ohne Beschränkung der Allgemeinheit die Funktionsweise anhand von Gitlab vorgestellt:
+
+\begin{enumerate}
+  \item Ein Nutzer macht eine Änderung an dem Repository und pusht den Commit auf den GitLab-Server. Die GitLab-Instanz startet einen OCI-Ubuntucontainer welcher das Repository im current working directory (CWD) eingebunden hat.
+  \item Das System wird via \texttt{apt} aktualisiert und es werden folgende Abhängigkeiten installiert:
+    \begin{itemize}
+      \item curl (Zur Installation von Rust via \texttt{rustup} benötigt)
+      \item git (Für den Download des Konvertierungsprogramms benötigt)
+      \item \LaTeX (Zur Darstellung von Formeln zur Laufzeit benötigt)
+      \item C-Compiler via \texttt{build-essential} (Zur Kompilation benötigt)
+      \item pkg-config (Zur Kompilation benötigt)
+      \item OpenSSL (Zur Kompilation benötigt)
+      \item Rust-Compiler (Zur Kompilation benötigt)
+    \end{itemize}
+  \item Das Konvertierungsprogramm wird in das CWD via git gecloned und kompiliert.
+  \item Das kompilierte Programm wird auf den Ordner mit den Anki-Markdowndokumenten angewandt.
+  \item Das resultierende Karteikartenarchiv wird als Artifact den Nutzern bereitgestellt.
+\end{enumerate}
+
 \section{Implementation}
 \subsection{Offlineunterst\"utzung}
 \subsection{\LaTeX-Unterst\"utzung}
