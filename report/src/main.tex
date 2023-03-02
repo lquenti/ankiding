@@ -194,6 +194,29 @@ Diese Syntax würde wiefolgt aussehen:
 Der Inhalt hiervon wird leider von Github gar nicht gerendered, weswegen es für unseren Anwendungsfall nicht nutzbar ist. In GitLab sowie HedgeDoc werden die Tags auch nicht angezeigt, jedoch ist zumindest der Inhalt noch sichtbar.
 
 \subsection{Unterst\"utzung von \LaTeX-Formeln}
+Die Desktopversion von Anki ermöglicht bereits die Darstellung von \LaTeX-Formeln auf Karteikarten. Dabei wird beim ersten Anzeigen einer Karteikarte ein Bild der Formel mit einer lokal installierten \LaTeX-Engine gerendert und in der Anki-eigenen Mediendatenbank gespeichert. Die Formel in der Karteikarte wird durch das gerenderte Bild ersetzt. Somit muss jede Formel nur einmal gerendert werden.Insbesondere wird die Mediendatenbank über die Cloud synchronisiert. Somit reicht es, dass das erste Gerät eine \LaTeX-Intallation hat.\\
+
+Die Mobilappliaktionen wie AnkiDroid oder die iOS-Version haben jedoch keine Unterstützung für \LaTeX. Dies stellt normalerweise kein Problem dar, da bei der Karteikartenerstellung über die Desktopapplikation bereits die Formel gerendered wird. Da der Karteikartengenerator hier jedoch eigenständig zu Anki funktioniert, muss in Rahmen dieser Applikation auch die Formelgeneration übernommen werden.\\
+
+Die Formelumwandlung ist jedoch nicht trivial. Das Problem hierbei sind die unterstützten Ausgabeformate:
+\begin{itemize}
+  \item \textbf{Portable Document Format (PDF):} PDF ist ein sehr komplexes Dateiformat. Es hat viele, sehr umfangreiche Standards und wird von nur wenig Applikationen korrekt implementiert. Somit ist die Rasterisierung von PDF von Applikationen, welche nicht von Adobe hergestellt wurden, sehr fehleranfällig.
+  \item \textbf{Device independent file format (DVI):} DVI ist ein selten genutztes, obskures Seitenformat. \LaTeX ist die einzige große Applikation, welche noch DVI als Ausgabeformat unterstützt, da Knuth es als formell unterstütztes Ausgabeformat von \TeX definierte. Dementsprechend wenig Applikationen unterstützen DVI.
+  \item \textbf{Encapsulated PostScript (EPS):} EPS ist ein für Drucker entwickeltes Vektorgrafikformat. Somit unterscheidet es sich sowohl von der Funktionalität als auch von der Nutzerschaft stark von pixelbasierten Bildformaten wie PNG.
+\end{itemize}
+
+Im folgenden wird eine Taxonomie der Konvertierungmöglichkeiten vorgestellt:
+% TODO: Citations.
+\begin{itemize}
+  \item \textbf{ImageMagick:} ImageMagick \cite{ImageMagick} ist ein open-source Programm zur Bearbeitung von Raster- und Lektorgrafiken. Diese Lösung ist auch die etablierte Lösung des \TeX-Stackexchange \cite{TeXStackexchange}. Sie ist simpel, hat jedoch zwei große Nachteile. Einerseits benötigt man sowohl \LaTeX als auch ImageMagick als externe Abhängigkeit; andererseits benötigt sie manuelle Anpassungen der Sicherheitsrichtlinien, was root vorraussetzt.
+  \item \textbf{PDFium:} PDFium \cite{PDFium} ist die C++ PDF Bibliothek welche von Chromium \cite{Chromium} benutzt wird. Da man zum kompilieren jedoch den kompletten Chromium-Browser kompilieren muss, ist der Aufwand zu hoch. Chromium braucht mindestens 8GB RAM sowie 100GB Festplattenspeicher zur Kompilation und braucht auf älterer Hardware mehrere Stunden.
+  \item \textbf{KaTeX:} KaTeX \cite{KaTeX} ist eine in Javascript geschriebene \LaTeX-Implementation, welche auf Webseiten eingebunden werden kann um Formeln darzustellen. Sie wird unter anderem auch von GitHub und GitLab genutzt. Jedoch würde dies eine LaTeX-Engine wie Deno \cite{Deno} oder Node.js \cite{Node} vorraussetzen, welche sehr komplex einzubinden wäre.
+  \item \textbf{dvisvgm:} Zuletzt gibt es \texttt{dvisvgm} \cite{dvisvgm}, welches PDF, DVI und EPS-Dokumente in SVG-Vektorgrafiken umwandeln kann. SVG ist das häufigst genutzte Vektorgrafikformat, für welches viele PNG
+    Konvertierungsmöglichkeiten existieren.
+\end{itemize}
+
+In unserem Fall haben wir uns für \texttt{dvisvgm} entschieden. Es ist eine kleine Laufzeitabhängigkeit, ist jedoch in jeder kompletten TeXLive- sowie MikTeX-Installation vorhanden. Dies bedeutet, dass wir keine Abhängigkeiten haben, welche nicht auch von Anki vorrausgesetzt werden. Die von \texttt{dvisvgm} erstellen SVG-Grafiken werden dann durch \texttt{resvg} \cite{resvg} zu PNG exportiert.
+
 \subsection{Commitbasierte Kartengeneration durch Continuous Integration (CI)}
 \section{Implementation}
 \subsection{Offlineunterst\"utzung}
