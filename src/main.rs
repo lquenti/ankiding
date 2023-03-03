@@ -29,25 +29,51 @@ struct Cli {
     dark_mode: bool,
 }
 
-fn main() -> Result<()> {
+
+fn require_executables() {
     latex::require_executable("pdflatex");
     latex::require_executable("pdfcrop");
     latex::require_executable("dvisvgm");
-    latex::render_formula("f(x) = x", &PathBuf::from("."))?;
-    let mut replacements = HashMap::new();
+}
+
+/* TODO: Move everything out of here */
+
+
+fn get_cards_from_path(path: &PathBuf) -> Result<HashMap<PathBuf, Vec<Card>>> {
+    let filenames = io::get_all_files(path)?;
+    let mut cards = HashMap::new();
+    for filename in filenames {
+        let markdowns = io::read_file_to_string(&filename)?;
+        cards.insert(filename, Card::from_markdown(&markdowns));
+    }
+    Ok(cards)
+}
+
+fn render_formulas() {
+    // TODO
+}
+
+fn main() -> Result<()> {
+    require_executables();
+    //let mut replacements = HashMap::new();
     let cli = Cli::parse();
 
-    let decks = io::get_all_files(cli.path)?
-        .into_iter()
-        // Read files
-        .map(|filename| {
-            let markdowns = io::read_file_to_string(&filename).unwrap();
-            (filename, markdowns)
-        })
-        // Convert to cards
-        .map(|(filename, markdowns)| (filename, Card::from_markdown(&markdowns)))
+    let cards = get_cards_from_path(&cli.path)?;
+
+    // debug print
+    for (filename, cards) in &cards {
+        println!("{}:", filename.to_str().unwrap());
+        for card in cards {
+            println!("FRONT: {}", card.front);
+            println!("BACK: {}", card.back);
+            println!("----");
+        }
+    }
+
+    
+    /*
         // Convert to html
-        .map(|(filename, cards)| {
+    let decks = cards.into_iter().map(|(filename, cards)| {
             (
                 filename,
                 cards
@@ -118,5 +144,6 @@ fn main() -> Result<()> {
         }
         None => package.write_to_file("output.apkg")?,
     }
+    */
     Ok(())
 }

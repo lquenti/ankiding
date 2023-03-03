@@ -24,11 +24,11 @@ pub fn find_all_files_by_extension(
     Ok(paths)
 }
 
-pub fn get_all_files(path: PathBuf) -> Result<Vec<PathBuf>> {
+pub fn get_all_files(path: &PathBuf) -> Result<Vec<PathBuf>> {
     if path.is_file() {
-        Ok(vec![path])
+        Ok(vec![path.clone()])
     } else if path.is_dir() {
-        Ok(find_all_files_by_extension(&path, ".anki.md").unwrap())
+        Ok(find_all_files_by_extension(path, ".anki.md").unwrap())
     } else {
         Err(anyhow::anyhow!("Path is not a file or directory"))
     }
