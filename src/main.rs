@@ -74,28 +74,31 @@ fn download_images(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Resu
                 continue;
             }
             for image in images {
-                let new_filename = format!("{}{}{}", path.to_str().unwrap(), MAIN_SEPARATOR, uuid::Uuid::new_v4());
-                
+                let new_filepath = format!("{}{}{}", path.to_str().unwrap(), MAIN_SEPARATOR, uuid::Uuid::new_v4());
+                let new_filename = Path::new(&new_filepath).file_name().unwrap().to_str().unwrap();
+                println!("new_filepath: {}", &new_filepath);
                 if Path::new(&image).is_file() {
-                    std::fs::copy(&image, &new_filename)?;
+                    std::fs::copy(&image, &new_filepath)?;
                 } else if let Ok(url) = Url::parse(&image) {
                     let mut response = reqwest::blocking::get(url)?;
-                    let mut file = File::create(&new_filename)?;
+                    let mut file = File::create(&new_filepath)?;
                     copy(&mut response, &mut file)?;
                 } else {
                     return Err(anyhow::Error::msg("Path is neither a file nor a url"));
                 }
-                *card = card.replace_image_link(&image, &new_filename);
+                *card = card.replace_image_link(&image, new_filename);
             }
         }
     }
     Ok(())
 }
 
+
 fn main() -> Result<()> {
     require_executables();
     let tempdir = TempDir::new()?;
     let path = tempdir.path();
+    let path = &Path::new(".");
     let cli = Cli::parse();
 
     let mut cards = get_cards_from_path(&cli.path)?;
@@ -119,6 +122,9 @@ fn main() -> Result<()> {
     
     let new_files = io::get_all_files(path)?;
     let xs = new_files.iter().map(|s| s.to_str().unwrap()).collect();
+
+    // debug print xs
+    println!("{:?}", xs);
 
         let mut package = Package::new(decks, xs)?;
         match cli.output {
