@@ -12,8 +12,10 @@ lazy_static! {
 }
 
 lazy_static! {
-    static ref CARD_RE: Regex = Regex::new(r"(?P<card>>\s*[qQ]:.*?\n(?:>.*?\n)*>\s*[aA]:.*?\n(?:>.*?(\n|$))*)").unwrap();
-    static ref IMAGE_RE: Regex = Regex::new(r"!\[(?P<alt>(?:.|\s)*?)\]\((?P<link>(?:.|\s)*?)\)").unwrap();
+    static ref CARD_RE: Regex =
+        Regex::new(r"(?P<card>>\s*[qQ]:.*?\n(?:>.*?\n)*>\s*[aA]:.*?\n(?:>.*?(\n|$))*)").unwrap();
+    static ref IMAGE_RE: Regex =
+        Regex::new(r"!\[(?P<alt>(?:.|\s)*?)\]\((?P<link>(?:.|\s)*?)\)").unwrap();
     static ref LATEX_RE: Regex = Regex::new(r"\$\$(?P<formula>.*?)\$\$").unwrap();
 }
 
@@ -31,7 +33,8 @@ impl Card {
             let card = cap.name("card").unwrap().as_str().trim().to_string();
             let mut lines = card.lines();
             // Next, we trim every line and remove the ">" afterwards
-            let mut unquoted = lines.into_iter()
+            let mut unquoted = lines
+                .into_iter()
                 .map(|line| line.trim().trim_start_matches(">").trim())
                 .filter(|line| !line.is_empty())
                 .collect::<Vec<&str>>();
@@ -39,7 +42,9 @@ impl Card {
             // Thus, we expect that the first line starts with "q:" or "Q:"
             // Lets make sure that we don't have a bug
             assert!(unquoted[0].starts_with("q:") || unquoted[0].starts_with("Q:"));
-            unquoted[0] = unquoted[0].trim_start_matches("q:").trim_start_matches("Q:");
+            unquoted[0] = unquoted[0]
+                .trim_start_matches("q:")
+                .trim_start_matches("Q:");
 
             // Split everything before the A: or a: into the front
             let mut front = String::new();
@@ -60,7 +65,7 @@ impl Card {
                     back.push('\n');
                 }
             }
-            
+
             // Remove the last newline
             front.pop();
             back.pop();
@@ -91,7 +96,10 @@ impl Card {
         let formula = format!("$${}$$", formula);
         let front = self.front.replace(&formula, replacement);
         let back = self.back.replace(&formula, replacement);
-        Card { front: front.to_string(), back: back.to_string() }
+        Card {
+            front: front.to_string(),
+            back: back.to_string(),
+        }
     }
 
     pub fn get_all_images(&self) -> Vec<String> {
@@ -108,6 +116,9 @@ impl Card {
     pub fn replace_image_link(&self, image: &str, replacement: &str) -> Self {
         let front = self.front.replace(image, replacement);
         let back = self.back.replace(image, replacement);
-        Card { front: front.to_string(), back: back.to_string() }
+        Card {
+            front: front.to_string(),
+            back: back.to_string(),
+        }
     }
 }

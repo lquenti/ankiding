@@ -29,7 +29,6 @@ struct Cli {
     dark_mode: bool,
 }
 
-
 fn require_executables() {
     latex::require_executable("pdflatex");
     latex::require_executable("pdfcrop");
@@ -37,7 +36,6 @@ fn require_executables() {
 }
 
 /* TODO: Move everything out of here */
-
 
 fn get_cards_from_path(path: &PathBuf) -> Result<HashMap<PathBuf, Vec<Card>>> {
     let filenames = io::get_all_files(path)?;
@@ -49,7 +47,7 @@ fn get_cards_from_path(path: &PathBuf) -> Result<HashMap<PathBuf, Vec<Card>>> {
     Ok(cards)
 }
 
-fn render_formula(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Result<()>{
+fn render_formula(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Result<()> {
     for (_, cards) in cards {
         for card in cards {
             let formulas = card.get_all_formulas();
@@ -74,9 +72,17 @@ fn download_images(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Resu
                 continue;
             }
             for image in images {
-                let new_filepath = format!("{}{}{}", path.to_str().unwrap(), MAIN_SEPARATOR, uuid::Uuid::new_v4());
-                let new_filename = Path::new(&new_filepath).file_name().unwrap().to_str().unwrap();
-
+                let new_filepath = format!(
+                    "{}{}{}",
+                    path.to_str().unwrap(),
+                    MAIN_SEPARATOR,
+                    uuid::Uuid::new_v4()
+                );
+                let new_filename = Path::new(&new_filepath)
+                    .file_name()
+                    .unwrap()
+                    .to_str()
+                    .unwrap();
 
                 // Maybe its an URL
                 if let Ok(url) = Url::parse(&image) {
@@ -85,7 +91,7 @@ fn download_images(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Resu
                     copy(&mut response, &mut file)?;
                     continue;
                 }
-                
+
                 // Maybe its an path
                 // Either its an absolute path, then it already works
                 // If its a relative path, we paste it on the directory the markdown file is in
@@ -106,7 +112,6 @@ fn download_images(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Resu
     }
     Ok(())
 }
-
 
 fn main() -> Result<()> {
     require_executables();
@@ -132,7 +137,7 @@ fn main() -> Result<()> {
         })
         .map(|(filename, cards)| anki::from_cards(&filename, &cards, cli.dark_mode))
         .collect::<Vec<genanki_rs::Deck>>();
-    
+
     println!("path? {:?}", path);
     let new_files = std::fs::read_dir(path).unwrap();
     println!("new files? {:?}", &new_files);
@@ -140,28 +145,31 @@ fn main() -> Result<()> {
         .map(|x| x.unwrap().path())
         .filter(|x| x.is_file())
         .collect::<Vec<PathBuf>>();
-    let xs = xs_owned.iter().map(|x| x.to_str().unwrap()).collect::<Vec<&str>>();
+    let xs = xs_owned
+        .iter()
+        .map(|x| x.to_str().unwrap())
+        .collect::<Vec<&str>>();
 
     // debug print xs
     println!("{:?}", xs);
 
-        let mut package = Package::new(decks, xs)?;
-        match cli.output {
-            // TODO duplication with file handler finding markdown files
-            Some(path) => {
-                if path.is_dir() {
-                    let output_path =
-                        format!("{}{}output.apkg", path.to_str().unwrap(), MAIN_SEPARATOR);
-                    package.write_to_file(&output_path)?;
-                } else if path.parent().unwrap().is_dir() {
-                    package.write_to_file(path.as_os_str().to_str().unwrap())?;
-                } else {
-                    panic!("\"{:?}\" is neither a file nor a directory", path);
-                }
+    let mut package = Package::new(decks, xs)?;
+    match cli.output {
+        // TODO duplication with file handler finding markdown files
+        Some(path) => {
+            if path.is_dir() {
+                let output_path =
+                    format!("{}{}output.apkg", path.to_str().unwrap(), MAIN_SEPARATOR);
+                package.write_to_file(&output_path)?;
+            } else if path.parent().unwrap().is_dir() {
+                package.write_to_file(path.as_os_str().to_str().unwrap())?;
+            } else {
+                panic!("\"{:?}\" is neither a file nor a directory", path);
             }
-            None => package.write_to_file("output.apkg")?,
         }
-    
+        None => package.write_to_file("output.apkg")?,
+    }
+
     /*
         // Convert to html
     let decks = cards.into_iter().map(|(filename, cards)| {
