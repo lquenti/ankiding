@@ -67,7 +67,7 @@ fn render_formula(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Resul
 }
 
 fn download_images(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Result<()> {
-    for (_, cards) in cards {
+    for (markdownpath, cards) in cards {
         for card in cards {
             let images = card.get_all_images();
             if images.is_empty() {
@@ -76,15 +76,29 @@ fn download_images(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Resu
             for image in images {
                 let new_filepath = format!("{}{}{}", path.to_str().unwrap(), MAIN_SEPARATOR, uuid::Uuid::new_v4());
                 let new_filename = Path::new(&new_filepath).file_name().unwrap().to_str().unwrap();
-                println!("new_filepath: {}", &new_filepath);
-                if Path::new(&image).is_file() {
-                    std::fs::copy(&image, &new_filepath)?;
-                } else if let Ok(url) = Url::parse(&image) {
+
+
+                // Maybe its an URL
+                if let Ok(url) = Url::parse(&image) {
                     let mut response = reqwest::blocking::get(url)?;
                     let mut file = File::create(&new_filepath)?;
                     copy(&mut response, &mut file)?;
+                    continue;
+                }
+                
+                // Maybe its an path
+                // Either its an absolute path, then it already works
+                // If its a relative path, we paste it on the directory the markdown file is in
+                let image_path = PathBuf::from(&image);
+                if image_path.is_absolute() {
+                    let absolute_path = image_path.to_str().unwrap().to_string();
+                    std::fs::copy(&absolute_path, &new_filepath)?;
                 } else {
-                    return Err(anyhow::Error::msg(format!("\"{}\" is neither a file nor a url", &image)));
+                    let mut absolute_path = markdownpath.to_path_buf();
+                    absolute_path.pop();
+                    absolute_path.push(&image);
+                    let absolute_path = absolute_path.to_str().unwrap().to_string();
+                    std::fs::copy(&absolute_path, &new_filepath)?;
                 }
                 *card = card.replace_image_link(&image, new_filename);
             }

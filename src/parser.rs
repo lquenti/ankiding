@@ -87,7 +87,6 @@ impl Card {
     }
 
     pub fn replace_formula(&self, formula: &str, replacement: &str) -> Self {
-        // put the formula into $$ ... $$
         let formula = format!("$${}$$", formula);
         let front = self.front.replace(&formula, replacement);
         let back = self.back.replace(&formula, replacement);
