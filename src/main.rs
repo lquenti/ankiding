@@ -37,7 +37,7 @@ fn require_executables() {
 
 /* TODO: Move everything out of here */
 
-fn get_cards_from_path(path: &PathBuf) -> Result<HashMap<PathBuf, Vec<Card>>> {
+fn get_cards_from_path(path: &Path) -> Result<HashMap<PathBuf, Vec<Card>>> {
     let filenames = io::get_all_files(path)?;
     let mut cards = HashMap::new();
     for filename in filenames {
@@ -48,7 +48,7 @@ fn get_cards_from_path(path: &PathBuf) -> Result<HashMap<PathBuf, Vec<Card>>> {
 }
 
 fn render_formula(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Result<()> {
-    for (_, cards) in cards {
+    for cards in cards.values_mut() {
         for card in cards {
             let formulas = card.get_all_formulas();
             if formulas.is_empty() {
