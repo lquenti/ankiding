@@ -252,7 +252,20 @@ Die Funktionweise ist in mehrere, disjunkte Schritte aufgeteilt, welche im folge
 \end{enumerate}
 \section{Diskussion}
 \subsection{Audio- und Videounterst\"utzung}
+Diese Version unterstützt weder Audio- noch Videoeinbettung. Hierfür gibt es zwei Gründe:
+\begin{enumerate}
+  \item \textbf{Schlechte Anki-Unterstützung:} Offiziell ist die Einbettung von Audio- und Videodateien in Anki-Karteikarten möglich, jedoch ist der Support dafür nicht ausreichend. Wenn Audiodateien ohne weitere Anpassungen eingebunden werden, starten sie direkt nach dem initialen Laden der Karte, ohne dass Steuerungsmöglichkeiten zum Pausieren oder zur Lautstärkeeinstellung vorhanden sind. Bei Videodateien öffnet sich ein zusätzliches Pop-up-Fenster, das einen mpv-Player startet und das Video automatisch abspielt. Diese Probleme kann man jeodoch umgehen, in dem man manuell die HTML-Elemente in die Karte integriert und die Medien nur indirekt referenziert. Im Rahmen dieser Arbeit wurde auch ein Proof of Concept diesbezüglich erstellt \cite{AnkiPoC}.
+  \item \textbf{Keine native Markdownunterstützung:} Weder CommonMark, noch GFM\footnote{GFM unterstützt Videos, jedoch nur in Pull Requests und Issues \cite{GFMVid}.}, GLFM definieren einen offiziellen Weg Audio- und Videodateien einzubinden. HedgeDoc bietet nur die Möglichkeit für YouTube- oder Vimeovideos \cite{HFM2}. Keiner der genannten Standards unterstützen Audiodateien. Somit gibt es einen kanonischen Weg Video oder Audio syntaktisch sinnvoll einzubinden.
+\end{enumerate}
 \subsection{Geplante Weiterentwicklung und Einsatz der Software}
+Obwohl die erste Version erfolgreich entwickelt wurde, gibt es noch viel zu tun:
+
+\begin{itemize}
+  \item Die Anki Markdown-Spezifikation sollte erweitert werden, um mehr Medientypen auf eine kompatible Weise abzudecken. Dies sollte in einem offenen, RFC-ähnlichen Prozess geschehen, wo alle Interessen- und Nutzergruppen einbezogen werden sollten.
+  \item Die Anwendung sollte auch für Nicht-Informatikstudenten zugänglicher werden. Dies bedeutet die Entwicklung einer echten Benutzeroberfläche und die Schaffung einer insgesamt einfacheren Benutzererfahrung. Außerdem sollte eine angemessene Dokumentation erstellt werden, worin viele WYSIWYG-Tools für die Erstellung von Flashcards vorgestellt werden sollten.
+\end{itemize}
+
+Neben diesem Punkten ist geplant, sowohl mit der Fachgruppe Informatik sowie einer Anki-Projektgruppe eines Medizinstudentenvereins Testläufe zu gestalten, in welchen iterativ die Software und die dazugehörigen Arbeitsprozesse verbessert werden.
 \newpage
 \section{Literaturverzeichnis}
 \printbibliography
