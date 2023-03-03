@@ -217,7 +217,7 @@ Im folgenden wird eine Taxonomie der Konvertierungmöglichkeiten vorgestellt:
 
 In unserem Fall haben wir uns für \texttt{dvisvgm} entschieden. Es ist eine kleine Laufzeitabhängigkeit, ist jedoch in jeder kompletten TeXLive- sowie MikTeX-Installation vorhanden. Dies bedeutet, dass wir keine Abhängigkeiten haben, welche nicht auch von Anki vorrausgesetzt werden. Die von \texttt{dvisvgm} erstellen SVG-Grafiken werden dann durch \texttt{resvg} \cite{resvg} zu PNG exportiert.\\
 
-Als Syntax wurde sich für \texttt{\$f(x) = x\$} für Inline-\LaTeX und \texttt{\$\$f(x)=x\$\$} für Display-\LaTeX entschieden. Dies entspricht auch der KaTeX-Syntax, welche sowohl von HedgeDoc, als auch von GitHub oder GitLab genutzt wird.
+Als Syntax wurde sich für \texttt{\$f(x) = x\$} für Inline-\LaTeX und \texttt{\$\$f(x)=x\$\$} für Display-\LaTeX entschieden\footnote{Um das parsing simpel zu halten restriktieren wir diese Syntax vorerst nur auf einzelne Zeilen.}. Dies entspricht auch der KaTeX-Syntax, welche sowohl von HedgeDoc, als auch von GitHub oder GitLab genutzt wird.
 
 \subsection{Commitbasierte Kartengeneration durch Continuous Integration (CI)}
 Im Rahmen der Continuous Integration (CI) Softwarepraktik bieten alle großen Git-Repository-Hostinganbieter sogenannte Workflows an. Hierbei wird zu spezifischen Events wie Commits oder Pull Requests ein Container ausgeführt, welcher automatisiert Aufgaben erfüllen kann. Unter den typischen Aufgaben von CI zählen das Analysieren von Source Code nach Best Practises, dem sogenannten linting, der Ausführung automatisierter Tests sowie der Erstellung von Kompilaten.\\
