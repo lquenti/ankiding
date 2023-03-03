@@ -96,10 +96,7 @@ impl Card {
         let formula = format!("$${}$$", formula);
         let front = self.front.replace(&formula, replacement);
         let back = self.back.replace(&formula, replacement);
-        Card {
-            front,
-            back,
-        }
+        Card { front, back }
     }
 
     pub fn get_all_images(&self) -> Vec<String> {
@@ -116,9 +113,6 @@ impl Card {
     pub fn replace_image_link(&self, image: &str, replacement: &str) -> Self {
         let front = self.front.replace(image, replacement);
         let back = self.back.replace(image, replacement);
-        Card {
-            front,
-            back,
-        }
+        Card { front, back }
     }
 }
