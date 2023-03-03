@@ -84,7 +84,7 @@ fn download_images(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Resu
                     let mut file = File::create(&new_filepath)?;
                     copy(&mut response, &mut file)?;
                 } else {
-                    return Err(anyhow::Error::msg("Path is neither a file nor a url"));
+                    return Err(anyhow::Error::msg(format!("\"{}\" is neither a file nor a url", &image)));
                 }
                 *card = card.replace_image_link(&image, new_filename);
             }
@@ -98,7 +98,6 @@ fn main() -> Result<()> {
     require_executables();
     let tempdir = TempDir::new()?;
     let path = tempdir.path();
-    let path = &Path::new(".");
     let cli = Cli::parse();
 
     let mut cards = get_cards_from_path(&cli.path)?;
@@ -120,8 +119,14 @@ fn main() -> Result<()> {
         .map(|(filename, cards)| anki::from_cards(&filename, &cards, cli.dark_mode))
         .collect::<Vec<genanki_rs::Deck>>();
     
-    let new_files = io::get_all_files(path)?;
-    let xs = new_files.iter().map(|s| s.to_str().unwrap()).collect();
+    println!("path? {:?}", path);
+    let new_files = std::fs::read_dir(path).unwrap();
+    println!("new files? {:?}", &new_files);
+    let xs_owned = new_files
+        .map(|x| x.unwrap().path())
+        .filter(|x| x.is_file())
+        .collect::<Vec<PathBuf>>();
+    let xs = xs_owned.iter().map(|x| x.to_str().unwrap()).collect::<Vec<&str>>();
 
     // debug print xs
     println!("{:?}", xs);
@@ -137,7 +142,7 @@ fn main() -> Result<()> {
                 } else if path.parent().unwrap().is_dir() {
                     package.write_to_file(path.as_os_str().to_str().unwrap())?;
                 } else {
-                    panic!("Path is neither a file nor a directory");
+                    panic!("\"{:?}\" is neither a file nor a directory", path);
                 }
             }
             None => package.write_to_file("output.apkg")?,
