@@ -31,11 +31,11 @@ impl Card {
 
         for cap in CARD_RE.captures_iter(markdown) {
             let card = cap.name("card").unwrap().as_str().trim().to_string();
-            let mut lines = card.lines();
+            let lines = card.lines();
             // Next, we trim every line and remove the ">" afterwards
             let mut unquoted = lines
                 .into_iter()
-                .map(|line| line.trim().trim_start_matches(">").trim())
+                .map(|line| line.trim().trim_start_matches('>').trim())
                 .filter(|line| !line.is_empty())
                 .collect::<Vec<&str>>();
 
@@ -97,8 +97,8 @@ impl Card {
         let front = self.front.replace(&formula, replacement);
         let back = self.back.replace(&formula, replacement);
         Card {
-            front: front.to_string(),
-            back: back.to_string(),
+            front,
+            back,
         }
     }
 
@@ -117,8 +117,8 @@ impl Card {
         let front = self.front.replace(image, replacement);
         let back = self.back.replace(image, replacement);
         Card {
-            front: front.to_string(),
-            back: back.to_string(),
+            front,
+            back,
         }
     }
 }
