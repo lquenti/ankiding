@@ -47,8 +47,8 @@ impl Card {
             for line in unquoted {
                 if line.starts_with("a:") || line.starts_with("A:") {
                     is_front = false;
-                    front.push_str(line.trim_start_matches("a:").trim_start_matches("A:"));
-                    front.push('\n');
+                    back.push_str(line.trim_start_matches("a:").trim_start_matches("A:"));
+                    back.push('\n');
                     continue;
                 }
                 if is_front {
