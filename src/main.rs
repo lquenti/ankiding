@@ -49,27 +49,43 @@ fn get_cards_from_path(path: &PathBuf) -> Result<HashMap<PathBuf, Vec<Card>>> {
     Ok(cards)
 }
 
-fn render_formulas() {
-    // TODO
+fn render_formula(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Result<()>{
+    for (_, cards) in cards {
+        for card in cards {
+            let formulas = card.get_all_formulas();
+            if formulas.is_empty() {
+                continue;
+            }
+            for formula in formulas {
+                let output_file = latex::render_formula(&formula, path)?;
+                // Create a markdown image of the new png
+                let new_formula = format!("![latex-render]({})", output_file.to_str().unwrap());
+                // Replace the old formula with the new one
+                *card = card.replace_formula(&formula, &new_formula);
+            }
+        }
+    }
+    Ok(())
 }
+
 
 fn main() -> Result<()> {
     require_executables();
-    //let mut replacements = HashMap::new();
+    let tempdir = TempDir::new()?;
+    let path = tempdir.path();
     let cli = Cli::parse();
 
-    let cards = get_cards_from_path(&cli.path)?;
+    let mut cards = get_cards_from_path(&cli.path)?;
 
-    // debug print
+    render_formula(&mut cards, path)?;
+
+    // debug print cards
     for (filename, cards) in &cards {
-        println!("{}:", filename.to_str().unwrap());
         for card in cards {
-            println!("FRONT: {}", card.front);
-            println!("BACK: {}", card.back);
-            println!("----");
+            println!("{}", card.front);
+            println!("{}", card.back);
         }
     }
-
     
     /*
         // Convert to html

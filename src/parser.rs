@@ -13,7 +13,7 @@ lazy_static! {
 lazy_static! {
     static ref CARD_RE: Regex = Regex::new(r"(?P<card>>\s*[qQ]:.*?\n(?:>.*?\n)*>\s*[aA]:.*?\n(?:>.*?(\n|$))*)").unwrap();
     static ref IMAGE_RE: Regex = Regex::new(r"!\[(?P<alt>(?:.|\s)*?)\]\((?P<link>(?:.|\s)*?)\)").unwrap();
-    static ref LATEX_RE: Regex = Regex::new(r"\$(?P<formula>.*?)\$").unwrap();
+    static ref LATEX_RE: Regex = Regex::new(r"\$\$(?P<formula>.*?)\$\$").unwrap();
 }
 
 #[derive(Debug, Clone)]
@@ -31,7 +31,7 @@ impl Card {
             let mut lines = card.lines();
             // Next, we trim every line and remove the ">" afterwards
             let mut unquoted = lines.into_iter()
-                .map(|line| line.trim_start_matches(">").trim())
+                .map(|line| line.trim().trim_start_matches(">").trim())
                 .filter(|line| !line.is_empty())
                 .collect::<Vec<&str>>();
 
@@ -73,6 +73,25 @@ impl Card {
         let front = markdown_to_html(&self.front, &COMRAK_OPTIONS);
         let back = markdown_to_html(&self.back, &COMRAK_OPTIONS);
         Card { front, back }
+    }
+
+    pub fn get_all_formulas(&self) -> Vec<String> {
+        let mut formulas = Vec::new();
+        for cap in LATEX_RE.captures_iter(&self.front) {
+            formulas.push(cap.name("formula").unwrap().as_str().to_string());
+        }
+        for cap in LATEX_RE.captures_iter(&self.back) {
+            formulas.push(cap.name("formula").unwrap().as_str().to_string());
+        }
+        formulas
+    }
+
+    pub fn replace_formula(&self, formula: &str, replacement: &str) -> Self {
+        // put the formula into $$ ... $$
+        let formula = format!("$${}$$", formula);
+        let front = self.front.replace(&formula, replacement);
+        let back = self.back.replace(&formula, replacement);
+        Card { front: front.to_string(), back: back.to_string() }
     }
 
     pub fn map(self, f: impl Fn(String) -> String) -> Self {
