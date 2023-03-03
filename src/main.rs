@@ -13,6 +13,7 @@ use url::Url;
 
 mod anki;
 mod io;
+mod latex;
 mod parser;
 
 #[derive(Parser)]
@@ -28,21 +29,150 @@ struct Cli {
     dark_mode: bool,
 }
 
+fn require_executables() {
+    latex::require_executable("pdflatex");
+    latex::require_executable("pdfcrop");
+    latex::require_executable("dvisvgm");
+}
+
+/* TODO: Move everything out of here */
+
+fn get_cards_from_path(path: &Path) -> Result<HashMap<PathBuf, Vec<Card>>> {
+    let filenames = io::get_all_files(path)?;
+    let mut cards = HashMap::new();
+    for filename in filenames {
+        let markdowns = io::read_file_to_string(&filename)?;
+        cards.insert(filename, Card::from_markdown(&markdowns));
+    }
+    Ok(cards)
+}
+
+fn render_formula(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Result<()> {
+    for cards in cards.values_mut() {
+        for card in cards {
+            let formulas = card.get_all_formulas();
+            if formulas.is_empty() {
+                continue;
+            }
+            for formula in formulas {
+                let output_file = latex::render_formula(&formula, path)?;
+                let new_formula = format!("![latex-render]({})", output_file.to_str().unwrap());
+                *card = card.replace_formula(&formula, &new_formula);
+            }
+        }
+    }
+    Ok(())
+}
+
+fn download_images(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Result<()> {
+    for (markdownpath, cards) in cards {
+        for card in cards {
+            let images = card.get_all_images();
+            if images.is_empty() {
+                continue;
+            }
+            for image in images {
+                let new_filepath = format!(
+                    "{}{}{}",
+                    path.to_str().unwrap(),
+                    MAIN_SEPARATOR,
+                    uuid::Uuid::new_v4()
+                );
+                let new_filename = Path::new(&new_filepath)
+                    .file_name()
+                    .unwrap()
+                    .to_str()
+                    .unwrap();
+
+                // Maybe its an URL
+                if let Ok(url) = Url::parse(&image) {
+                    let mut response = reqwest::blocking::get(url)?;
+                    let mut file = File::create(&new_filepath)?;
+                    copy(&mut response, &mut file)?;
+                    continue;
+                }
+
+                // Maybe its an path
+                // Either its an absolute path, then it already works
+                // If its a relative path, we paste it on the directory the markdown file is in
+                let image_path = PathBuf::from(&image);
+                if image_path.is_absolute() {
+                    let absolute_path = image_path.to_str().unwrap().to_string();
+                    std::fs::copy(&absolute_path, &new_filepath)?;
+                } else {
+                    let mut absolute_path = markdownpath.to_path_buf();
+                    absolute_path.pop();
+                    absolute_path.push(&image);
+                    let absolute_path = absolute_path.to_str().unwrap().to_string();
+                    std::fs::copy(&absolute_path, &new_filepath)?;
+                }
+                *card = card.replace_image_link(&image, new_filename);
+            }
+        }
+    }
+    Ok(())
+}
+
 fn main() -> Result<()> {
-    let mut replacements = HashMap::new();
+    require_executables();
+    let tempdir = TempDir::new()?;
+    let path = tempdir.path();
     let cli = Cli::parse();
 
-    let decks = io::get_all_files(cli.path)?
+    let mut cards = get_cards_from_path(&cli.path)?;
+
+    render_formula(&mut cards, path)?;
+    download_images(&mut cards, path)?;
+
+    let decks = cards
         .into_iter()
-        // Read files
-        .map(|filename| {
-            let markdowns = io::read_file_to_string(&filename).unwrap();
-            (filename, markdowns)
-        })
-        // Convert to cards
-        .map(|(filename, markdowns)| (filename, Card::from_markdown(&markdowns)))
-        // Convert to html
         .map(|(filename, cards)| {
+            (
+                filename,
+                cards
+                    .into_iter()
+                    .map(Card::into_html)
+                    .collect::<Vec<Card>>(),
+            )
+        })
+        .map(|(filename, cards)| anki::from_cards(&filename, &cards, cli.dark_mode))
+        .collect::<Vec<genanki_rs::Deck>>();
+
+    println!("path? {:?}", path);
+    let new_files = std::fs::read_dir(path).unwrap();
+    println!("new files? {:?}", &new_files);
+    let xs_owned = new_files
+        .map(|x| x.unwrap().path())
+        .filter(|x| x.is_file())
+        .collect::<Vec<PathBuf>>();
+    let xs = xs_owned
+        .iter()
+        .map(|x| x.to_str().unwrap())
+        .collect::<Vec<&str>>();
+
+    // debug print xs
+    println!("{:?}", xs);
+
+    let mut package = Package::new(decks, xs)?;
+    match cli.output {
+        // TODO duplication with file handler finding markdown files
+        Some(path) => {
+            if path.is_dir() {
+                let output_path =
+                    format!("{}{}output.apkg", path.to_str().unwrap(), MAIN_SEPARATOR);
+                package.write_to_file(&output_path)?;
+            } else if path.parent().unwrap().is_dir() {
+                package.write_to_file(path.as_os_str().to_str().unwrap())?;
+            } else {
+                panic!("\"{:?}\" is neither a file nor a directory", path);
+            }
+        }
+        None => package.write_to_file("output.apkg")?,
+    }
+
+    /*
+        // Convert to html
+    let decks = cards.into_iter().map(|(filename, cards)| {
             (
                 filename,
                 cards
@@ -113,6 +243,6 @@ fn main() -> Result<()> {
         }
         None => package.write_to_file("output.apkg")?,
     }
-
+    */
     Ok(())
 }

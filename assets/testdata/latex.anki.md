@@ -1,10 +1,5 @@
+# LaTeX test
 
----
-Q: Some Formulas
----
-A:
-Inline: $$\sum_{i=1}^{n} i = \frac{n^2+n}{2}$$
-
-Display: \[ \sum_{i=1}^{n} i = \frac{n^2+n}{2} \]
-
----
+> Q: What is the Kleiner Gauß?
+> A:
+> $$\sum_{i=1}^n i = \frac{n\cdot(n+1)}{2}$$, not $$id(x) = x$$
