@@ -94,22 +94,20 @@ impl Card {
         Card { front: front.to_string(), back: back.to_string() }
     }
 
-    pub fn map(self, f: impl Fn(String) -> String) -> Self {
-        let front = f(self.front);
-        let back = f(self.back);
-        Card { front, back }
+    pub fn get_all_images(&self) -> Vec<String> {
+        let mut images = Vec::new();
+        for cap in IMAGE_RE.captures_iter(&self.front) {
+            images.push(cap.name("link").unwrap().as_str().to_string());
+        }
+        for cap in IMAGE_RE.captures_iter(&self.back) {
+            images.push(cap.name("link").unwrap().as_str().to_string());
+        }
+        images
     }
 
-    pub fn apply<A>(self, f: impl Fn(&str) -> A) -> (A, A) {
-        (f(&self.front), f(&self.back))
-    }
-
-    // TODO Rename me
-    pub fn mass_apply_to_vec<A>(cards: Vec<Self>, f: impl Fn(&str) -> Vec<A>) -> Vec<A> {
-        cards
-            .into_iter()
-            .map(|card| card.apply(&f))
-            .flat_map(|(xs, ys)| xs.into_iter().chain(ys.into_iter()).collect::<Vec<A>>())
-            .collect::<Vec<A>>()
+    pub fn replace_image_link(&self, image: &str, replacement: &str) -> Self {
+        let front = self.front.replace(image, replacement);
+        let back = self.back.replace(image, replacement);
+        Card { front: front.to_string(), back: back.to_string() }
     }
 }

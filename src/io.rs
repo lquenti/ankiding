@@ -24,9 +24,9 @@ pub fn find_all_files_by_extension(
     Ok(paths)
 }
 
-pub fn get_all_files(path: &PathBuf) -> Result<Vec<PathBuf>> {
+pub fn get_all_files(path: &Path) -> Result<Vec<PathBuf>> {
     if path.is_file() {
-        Ok(vec![path.clone()])
+        Ok(vec![path.to_path_buf()])
     } else if path.is_dir() {
         Ok(find_all_files_by_extension(path, ".anki.md").unwrap())
     } else {

@@ -58,9 +58,7 @@ fn render_formula(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Resul
             }
             for formula in formulas {
                 let output_file = latex::render_formula(&formula, path)?;
-                // Create a markdown image of the new png
                 let new_formula = format!("![latex-render]({})", output_file.to_str().unwrap());
-                // Replace the old formula with the new one
                 *card = card.replace_formula(&formula, &new_formula);
             }
         }
@@ -68,6 +66,31 @@ fn render_formula(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Resul
     Ok(())
 }
 
+fn download_images(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Result<()> {
+    for (_, cards) in cards {
+        for card in cards {
+            let images = card.get_all_images();
+            if images.is_empty() {
+                continue;
+            }
+            for image in images {
+                let new_filename = format!("{}{}{}", path.to_str().unwrap(), MAIN_SEPARATOR, uuid::Uuid::new_v4());
+                
+                if Path::new(&image).is_file() {
+                    std::fs::copy(&image, &new_filename)?;
+                } else if let Ok(url) = Url::parse(&image) {
+                    let mut response = reqwest::blocking::get(url)?;
+                    let mut file = File::create(&new_filename)?;
+                    copy(&mut response, &mut file)?;
+                } else {
+                    return Err(anyhow::Error::msg("Path is neither a file nor a url"));
+                }
+                *card = card.replace_image_link(&image, &new_filename);
+            }
+        }
+    }
+    Ok(())
+}
 
 fn main() -> Result<()> {
     require_executables();
@@ -78,14 +101,41 @@ fn main() -> Result<()> {
     let mut cards = get_cards_from_path(&cli.path)?;
 
     render_formula(&mut cards, path)?;
+    download_images(&mut cards, path)?;
 
-    // debug print cards
-    for (filename, cards) in &cards {
-        for card in cards {
-            println!("{}", card.front);
-            println!("{}", card.back);
+    let decks = cards
+        .into_iter()
+        .map(|(filename, cards)| {
+            (
+                filename,
+                cards
+                    .into_iter()
+                    .map(Card::into_html)
+                    .collect::<Vec<Card>>(),
+            )
+        })
+        .map(|(filename, cards)| anki::from_cards(&filename, &cards, cli.dark_mode))
+        .collect::<Vec<genanki_rs::Deck>>();
+    
+    let new_files = io::get_all_files(path)?;
+    let xs = new_files.iter().map(|s| s.to_str().unwrap()).collect();
+
+        let mut package = Package::new(decks, xs)?;
+        match cli.output {
+            // TODO duplication with file handler finding markdown files
+            Some(path) => {
+                if path.is_dir() {
+                    let output_path =
+                        format!("{}{}output.apkg", path.to_str().unwrap(), MAIN_SEPARATOR);
+                    package.write_to_file(&output_path)?;
+                } else if path.parent().unwrap().is_dir() {
+                    package.write_to_file(path.as_os_str().to_str().unwrap())?;
+                } else {
+                    panic!("Path is neither a file nor a directory");
+                }
+            }
+            None => package.write_to_file("output.apkg")?,
         }
-    }
     
     /*
         // Convert to html
