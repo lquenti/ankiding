@@ -6,6 +6,7 @@ lazy_static! {
     static ref COMRAK_OPTIONS: ComrakOptions = {
         let mut options = ComrakOptions::default();
         options.extension.table = true;
+        options.extension.strikethrough = true;
         options
     };
 }
