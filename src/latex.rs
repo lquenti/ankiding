@@ -114,7 +114,6 @@ fn convert_svg_to_png(input_file: &Path, output_file: &Path) -> io::Result<()> {
         pixmap.as_mut(),
     )
     .unwrap();
-    println!("output_file: {:?}", output_file);
     pixmap.save_png(output_file).unwrap();
     Ok(())
 }

@@ -138,9 +138,7 @@ fn main() -> Result<()> {
         .map(|(filename, cards)| anki::from_cards(&filename, &cards, cli.dark_mode))
         .collect::<Vec<genanki_rs::Deck>>();
 
-    println!("path? {:?}", path);
     let new_files = std::fs::read_dir(path).unwrap();
-    println!("new files? {:?}", &new_files);
     let xs_owned = new_files
         .map(|x| x.unwrap().path())
         .filter(|x| x.is_file())
@@ -149,9 +147,6 @@ fn main() -> Result<()> {
         .iter()
         .map(|x| x.to_str().unwrap())
         .collect::<Vec<&str>>();
-
-    // debug print xs
-    println!("{:?}", xs);
 
     let mut package = Package::new(decks, xs)?;
     match cli.output {
