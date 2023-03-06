@@ -8,8 +8,6 @@
 - [Installation](#installation)
 - [Quickstart](#quickstart)
 - [Automated CI Anki Deck Builds](#automated-ci-anki-deck-builds)
-  - [GitHub](#github)
-  - [GitLab](#gitlab)
 - [Contribution](#contribution)
 
 ## What exactly is this?
