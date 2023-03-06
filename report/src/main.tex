@@ -33,7 +33,7 @@ Trotz der Vorteile, die sowohl Lernzettel als auch Karteikarten bieten, haben si
 
 \newpage
 
-In diesem Praktikumsbericht wird eine Lösung vorgestellt, Lernzettel mit Markdown und und Karteikarten mit Anki logisch zu verbinden. Die Idee basiert auf dem Konzept von Literate Programming.\\
+In diesem Praktikumsbericht wird eine Lösung vorgestellt, Lernzettel mit Markdown und Karteikarten mit Anki logisch zu verbinden. Die Idee basiert auf dem Konzept von Literate Programming.\\
 
 Literate Programming ist ein Konzept, das von Donald E. Knuth entwickelt wurde \cite{LitProg}. Es kombiniert Programmcode mit dessen Dokumentation, so dass beide in einer einzelnen Datei vereint werden. Die Funktionen sind innerhalb der Dokumentation integriert und die gesamte Dokumentation lässt sich ausführen. Das ursprüngliche Konzept von Literate Programming verwendet eine eigene Sprache namens "WEB", welche von Knuth selbst entwickelt wurde. WEB-Quelldateien kompilierten entweder zu Pascal oder \TeX \cite{WebIntroduction}.\\
 
@@ -57,7 +57,7 @@ Markdown ist zwar sehr verbreitet, jedoch gibt es keine universale Markdownspezi
 
 Für den Anwendungsfall dieses Praktikums wird als Basis der am weitesten verbreite CommonMark \cite{CommonMark} Standard genommen. Dieser ist sehr simpel, jedoch von den meisten Implementationen unterstützt. Insbesondere ist er zu den meisten üblichen Standards kompatibel.
 
-Desweiteren soll der hier entwickelte Karteikarten-Standard auch mit folgenden Markdownstandards kompatibel sein:
+Des Weiteren soll der hier entwickelte Karteikarten-Standard auch mit folgenden Markdownstandards kompatibel sein:
 \begin{itemize}
   \item \textbf{GitHub Flavored Markdown (GFM) \cite{GFM}:} Benötigt für die automatische Kartengenerierung über GitHubrepositories.
   \item \textbf{GitLab Flavored Markdown (GLFM) \cite{GLFM} :} Benötigt für die automatische Kartengenerierung über GitLabrepositories.
@@ -73,7 +73,7 @@ Somit, aufbauend auf CommonMark, wird im Rahmen dieses Praktikums ein Standard f
   \item Keine Kollisionen mit normalem Text; keine falschen positiven Erkennungen.
 \end{itemize}
 
-Die unsterstützte Karteikartensyntax funktioniert wiefolgt:
+Die unterstützte Karteikartensyntax funktioniert wie folgt:
 \begin{figure}[H]
 \centering
 \begin{lstlisting}
@@ -166,9 +166,9 @@ GitHub & GitLab\\
 \caption{Rendering der in Abb. 5 definierten Syntax}
 \end{figure}
 
-Jedoch hat auch diese Syntax einige Nachteile. Zu erst eignet sich diese Syntax nicht für die Anwendung durch literate Programming, da hierdurch nur viele einzeilige Tabellen zwischen dem Paragraphen entstehen würden. Zudem ist diese Art von Syntax sehr aufwändig für den Endnutzer, sofern dieser kein WYSIWYG-Editor nutzt. Zuletzt ist es weder möglich, eine Antwort über mehrere Zeilen zu definieren, noch sinnvoll Bilder einzubinden.
+Jedoch hat auch diese Syntax einige Nachteile. Zuerst eignet sich diese Syntax nicht für die Anwendung durch Literate Programming, da hierdurch nur viele einzeilige Tabellen zwischen dem Paragraphen entstehen würden. Zudem ist diese Art von Syntax sehr aufwändig für den Endnutzer, sofern dieser kein WYSIWYG-Editor nutzt. Zuletzt ist es weder möglich, eine Antwort über mehrere Zeilen zu definieren, noch sinnvoll Bilder einzubinden.
 
-\paragraph{Karteikarten durch XML Objekte:}~\\
+\paragraph{Karteikarten durch XML-Objekte:}~\\
 Diese Syntax würde wiefolgt aussehen:
 \begin{figure}[H]
 \centering
@@ -194,7 +194,7 @@ Diese Syntax würde wiefolgt aussehen:
 Der Inhalt hiervon wird leider von GitHub gar nicht gerendered, weswegen es für unseren Anwendungsfall nicht nutzbar ist. In GitLab und HedgeDoc werden die Tags nicht angezeigt, jedoch ist der Inhalt noch sichtbar.
 
 \subsection{Unterst\"utzung von \LaTeX-Formeln}
-Die Desktopversion von Anki ermöglicht bereits die Darstellung von \LaTeX-Formeln in Karteikarten. Hier wird beim ersten Anzeigen einer Karteikarte ein Bild der Formel mit einer lokal installierten \LaTeX-Engine gerendert und in der Anki-eigenen Mediendatenbank gespeichert. Die Formel in der Karteikarte wird durch das gerenderte Bild ersetzt. Somit muss jede Formel nur einmal gerendert werden. Insbesondere wird die Mediendatenbank über die Cloud synchronisiert. Somit reicht es, dass das erste Gerät eine \LaTeX-Intallation hat.\\
+Die Desktopversion von Anki ermöglicht bereits die Darstellung von \LaTeX-Formeln in Karteikarten. Hier wird beim ersten Anzeigen einer Karteikarte ein Bild der Formel mit einer lokal installierten \LaTeX-Engine gerendert und in der Anki-eigenen Mediendatenbank gespeichert. Die Formel in der Karteikarte wird durch das gerenderte Bild ersetzt. Somit muss jede Formel nur einmal gerendert werden. Insbesondere wird die Mediendatenbank über die Cloud synchronisiert. Somit reicht es, dass das erste Gerät eine \LaTeX-Installation hat.\\
 
 Die Mobilappliaktionen wie AnkiDroid oder die iOS-Version haben jedoch keine Unterstützung für \LaTeX. Dies stellt normalerweise kein Problem dar, da bei der Karteikartenerstellung über die Desktopapplikation bereits die Formel gerendered wird. Da der Karteikartengenerator hier jedoch eigenständig zu Anki funktioniert, muss in Rahmen dieser Applikation auch die Formelgeneration übernommen werden.\\
 
