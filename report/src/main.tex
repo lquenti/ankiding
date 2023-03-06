@@ -18,7 +18,7 @@ Karteikarten und selbstgeschriebene Zusammenfassungen sind zwei wertvolle Ressou
 Das Problem des Lernens, insbesondere in universitären Bereich, lässt sich in zwei distinkte Kategorien aufteilen: Das verständnisorienterte Lernen komplexer Themen und das faktenbasierte Lernen spezifischer Details. Obwohl die meisten Klausuren eine Kombination beider Kategorien darstellen, erfordert jede Art unterschiedliche Vorgehensweisen:
 
 \begin{itemize}
-\item Im Falle verständnisbasierter komplexer Themen können Lernzettel geschrieben werden, in dem Informationen zusammengefasst und umformuliert werden. Dies resultiert in immer noch großen komplexen Texten oder Stichpunktlisten, in welchen die einzelnen Informationen sehr zusammenhängend sind. Die einzelnen Themen sind weniger isoliert; das erwartete Detailwissen ist geringer. Diese Klasse an Themen ist typisch für logisch-orientierte Studiengänge wie z.B. Mathematik, Philosophie, Informatik oder Physik.
+\item Im Falle verständnisbasierter komplexer Themen können Lernzettel geschrieben werden, in dem Informationen zusammengefasst und strukturiert werden. Dies resultiert in immer noch großen komplexen Texten oder Stichpunktlisten, in welchen die einzelnen Informationen sehr zusammenhängend sind. Die einzelnen Themen sind weniger isoliert; das erwartete Detailwissen ist geringer. Diese Klasse an Themen ist typisch für logisch-orientierte Studiengänge wie z.B. Mathematik, Philosophie, Informatik oder Physik.
 \item Im Gegensatz dazu erfordert das akribische Lernen von faktenbasierten Details viel Auswendiglernen und wird meistens über Karteikarten praktiziert. Dieser Ansatz ist typisch für Studiengänge mit einem hohen Lernvolumen, wie z.B. Medizin, Biologie oder Sprachwissenschaften. Allgemein findet sich diese Problemart oft in komplexen, nicht-menschengemachten Systemen wieder.
 \end{itemize}
 
@@ -55,7 +55,7 @@ Zuletzt wurden Git-Repository-Vorlagen für GitLab \cite{GitlabTemplate} und Git
 \subsection{Entwurf einer Markdownerweiterung}
 Markdown ist zwar sehr verbreitet, jedoch gibt es keine universale Markdownspezifikation. Stattdessen gibt es viele verschiedene Varianten, welche aber leicht voneinander abweichen. Somit, bevor man einen Markdownstandard erweitern kann, muss ein Grundstandard spezifiziert werden.
 
-Für den Anwendungsfall dieses Praktikums wird als Basis der am weitesten verbreite CommonMark \cite{CommonMark} Standard genommen. Dieser ist sehr simpel, jedoch von den meisten Implementationen unterstützt. Insbesondere ist er zu den meisten üblichen Standards kompatibel.
+Für den Anwendungsfall dieses Praktikums wird als Basis der am weitesten verbreite CommonMark \cite{CommonMark} Standard genommen. Dieser ist sehr simpel, wird jedoch von den meisten Implementationen unterstützt. Insbesondere ist er zu den meisten üblichen Standards kompatibel.
 
 Des Weiteren soll der hier entwickelte Karteikarten-Standard auch mit folgenden Markdownstandards kompatibel sein:
 \begin{itemize}
@@ -215,7 +215,7 @@ Im folgenden wird eine Taxonomie der Konvertierungmöglichkeiten präsentiert:
 
 In unserem Fall haben wir uns für \texttt{dvisvgm} entschieden. Es ist eine Laufzeitabhängigkeit, jedoch in jeder kompletten TeXLive- sowie MikTeX-Installation vorhanden. Dies bedeutet, dass wir keine Abhängigkeiten haben, welche nicht auch von Anki vorrausgesetzt werden. Die von \texttt{dvisvgm} erstellen SVG-Grafiken werden dann durch \texttt{resvg} \cite{resvg} zu PNG exportiert.\\
 
-Als Syntax wurde sich \texttt{\$\$f(x)=x\$\$} für \LaTeX entschieden\footnote{Um das parsing simpel zu halten restriktieren wir diese Syntax vorerst nur auf einzelne Zeilen.}. Dies entspricht auch der KaTeX-Syntax, welche sowohl von HedgeDoc, als auch von GitHub oder GitLab genutzt wird.
+Als Syntax wurde sich \texttt{\$\$f(x)=x\$\$} für \LaTeX entschieden\footnote{Um das Parsing simpel zu halten restriktieren wir diese Syntax vorerst nur auf einzelne Zeilen.}. Dies entspricht auch der KaTeX-Syntax, welche sowohl von HedgeDoc, als auch von GitHub oder GitLab genutzt wird.
 
 \subsection{Commitbasierte Kartengeneration durch Continuous Integration (CI)}
 Im Rahmen der Continuous Integration (CI) Softwarepraktik bieten alle großen Git-Repository-Hostinganbieter sogenannte Workflows an. Hierbei wird zu spezifischen Events wie Commits oder Pull Requests ein Container ausgeführt, welcher automatisiert vordefinierte Aufgaben erfüllen kann. Unter den typischen Aufgaben von CI zählen das Analysieren von Source Code nach Best-Practises, dem sogenannten Linting, der Ausführung automatisierter Tests sowie der Erstellung von Kompilaten.\\
@@ -242,7 +242,7 @@ In unserem Fall ermöglichen wir durch die Nutzung von CI-Workflows eine automat
 \section{Funktionsweise}
 Die Funktionweise ist in mehrere, disjunkte Schritte aufgeteilt, welche im folgenden betrachtet werden:
 \begin{enumerate}
-  \item \textbf{Markdownkarteikarten einlesen:} Innerhalb des per Programmargument übergebenen Pfades werden rekursiv nach allen Dateien gesucht, welche eine \texttt{.anki.md} Dateiendung haben. Alle gefundenen Dateien werden eingelesen und Karteikarten werden alle nach vorherig definierter Syntax geschriebenen extrahiert.
+  \item \textbf{Markdownkarteikarten einlesen:} Innerhalb des per Programmargument übergebenen Pfades wird rekursiv nach allen Dateien gesucht, welche eine \texttt{.anki.md} Dateiendung haben. Alle gefundenen Dateien werden eingelesen und Karteikarten werden alle nach vorherig definierter Syntax extrahiert.
   \item \textbf{Formeln durch Bilder ersetzen:} Um die Mobilunterstützung zu sichern werden bereits zur Erstellung der Decks alle \LaTeX-Formeln zu PNG-Bildern umgewandelt, die dann in normaler Markdownsyntax als Ersatz der Formel eingesetzt werden.
   \item \textbf{Bilder lokal speichern:} Um die Möglichkeit der Offlinenutzung zu ermöglichen, werden sämtliche extern referenzierten Bilder lokal gespeichert.
   \item \textbf{Markdownkarteikarten in HTML umwandeln:} Mit der \texttt{comrak}-Bibliothek \cite{comrak} werden die Markdownkarteikarten in äquivalente HTML-Dokumente umgewandelt.
@@ -252,15 +252,15 @@ Die Funktionweise ist in mehrere, disjunkte Schritte aufgeteilt, welche im folge
 \subsection{Audio- und Videounterst\"utzung}
 Diese Version unterstützt weder Audio- noch Videoeinbettung. Hierfür gibt es zwei Gründe:
 \begin{enumerate}
-  \item \textbf{Schlechte Anki-Unterstützung:} Offiziell ist die Einbettung von Audio- und Videodateien in Anki-Karteikarten möglich, jedoch ist der Support dafür nicht ausreichend. Wenn Audiodateien ohne weitere Anpassungen eingebunden werden, starten sie direkt nach dem initialen Laden der Karte, ohne das Steuerungsmöglichkeiten zum Pausieren oder zur Lautstärkeeinstellung vorhanden sind. Bei Videodateien öffnet sich ein zusätzliches Pop-up-Fenster, das einen mpv-Player startet und das Video automatisch abspielt. Diese Probleme kann man jeodoch umgehen, in dem man manuell die HTML-Elemente in die Karte integriert und die Medien nur indirekt referenziert. Im Rahmen dieser Arbeit wurde auch ein Proof of Concept diesbezüglich erstellt \cite{AnkiPoC}.
-  \item \textbf{Keine native Markdownunterstützung:} Weder CommonMark noch GFM\footnote{GFM unterstützt Videos, jedoch nur in Pull Requests und Issues \cite{GFMVid}.} oder GLFM definieren einen offiziellen Weg Audio- und Videodateien einzubinden. HedgeDoc bietet nur die Möglichkeit für YouTube- oder Vimeovideos \cite{HFM2}. Keiner der genannten Standards unterstützen Audiodateien. Somit gibt es einen kanonischen Weg Video oder Audio syntaktisch sinnvoll einzubinden.
+  \item \textbf{Schlechte Anki-Unterstützung:} Offiziell ist die Einbettung von Audio- und Videodateien in Anki-Karteikarten möglich, jedoch ist der Support dafür nicht adäquat. Wenn Audiodateien ohne weitere Anpassungen eingebunden werden, starten sie direkt nach dem initialen Laden der Karte, ohne das Steuerungsmöglichkeiten zum Pausieren oder zur Lautstärkeeinstellung vorhanden sind. Bei Videodateien öffnet sich ein zusätzliches Pop-up-Fenster, das einen mpv-Player startet und das Video automatisch abspielt. Diese Probleme kann man jeodoch umgehen, in dem man manuell die HTML-Elemente in die Karte integriert und die Medien nur indirekt referenziert. Im Rahmen dieser Arbeit wurde auch ein Proof of Concept diesbezüglich erstellt \cite{AnkiPoC}.
+  \item \textbf{Keine native Markdownunterstützung:} Weder CommonMark noch GFM\footnote{GFM unterstützt Videos, jedoch nur in Pull Requests und Issues \cite{GFMVid}.} oder GLFM definieren einen offiziellen Weg Audio- und Videodateien einzubinden. HedgeDoc bietet nur die Möglichkeit für YouTube- oder Vimeovideos \cite{HFM2}. Keiner der genannten Standards unterstützen Audiodateien. Somit gibt es keinen kanonischen Weg Video oder Audio syntaktisch sinnvoll einzubinden.
 \end{enumerate}
 \subsection{Geplante Weiterentwicklung und Einsatz der Software}
 Obwohl die erste Version erfolgreich entwickelt wurde, gibt es noch einige geplante Folgeentwicklungen:
 
 \begin{itemize}
   \item Die Anki Markdown-Spezifikation sollte erweitert werden, um mehr Medientypen auf eine kompatible Weise abzudecken. Dies sollte in einem offenen, RFC-ähnlichen Prozess geschehen, wo alle Interessen- und Nutzergruppen einbezogen werden.
-  \item Die Anwendung sollte auch für Nicht-Informatikstudenten zugänglicher werden. Dies bedeutet die Entwicklung einer Benutzeroberfläche und die Erschaffung einer insgesamt einfacheren Benutzererfahrung. Außerdem sollte eine angemessene Dokumentation erstellt werden, worin viele WYSIWYG-Tools für die Erstellung von Flashcards vorgestellt werden sollten.
+  \item Die Anwendung sollte auch für Nicht-Informatiker zugänglicher werden. Dies bedeutet die Entwicklung einer Benutzeroberfläche und die Erschaffung einer insgesamt einfacheren Benutzererfahrung. Außerdem sollte eine angemessene Dokumentation erstellt werden, worin viele WYSIWYG-Tools für die Erstellung von Flashcards vorgestellt werden sollten.
 \end{itemize}
 
 Neben diesem Punkten ist geplant, sowohl mit der Fachgruppe Informatik sowie einer Anki-Projektgruppe eines Medizinstudentenvereins Testläufe zu gestalten, in welchen iterativ die Software und die dazugehörigen Arbeitsprozesse verbessert werden.
