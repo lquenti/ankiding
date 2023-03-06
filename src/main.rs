@@ -30,8 +30,12 @@ struct Cli {
 }
 
 fn require_executables() {
+    println!("Checking for required executables...");
+    println!("Checking for pdflatex...");
     latex::require_executable("pdflatex");
+    println!("Checking for pdfcrop...");
     latex::require_executable("pdfcrop");
+    println!("Checking for dvisvgm...");
     latex::require_executable("dvisvgm");
 }
 
@@ -119,9 +123,12 @@ fn main() -> Result<()> {
     let path = tempdir.path();
     let cli = Cli::parse();
 
+    println!("Loading markdown files from {:?}...", &cli.path);
     let mut cards = get_cards_from_path(&cli.path)?;
 
+    println!("Rendering formulas...");
     render_formula(&mut cards, path)?;
+    println!("Downloading images...");
     download_images(&mut cards, path)?;
 
     let decks = cards
@@ -148,6 +155,7 @@ fn main() -> Result<()> {
         .map(|x| x.to_str().unwrap())
         .collect::<Vec<&str>>();
 
+    println!("Creating package...");
     let mut package = Package::new(decks, xs)?;
     match cli.output {
         // TODO duplication with file handler finding markdown files
