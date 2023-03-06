@@ -21,7 +21,7 @@ pub fn require_executable(name: &str) {
 fn create_latex_file(formula: &str, filename: &Path) -> io::Result<()> {
     let mut file = File::create(filename)?;
     writeln!(file, "\\documentclass{{standalone}}")?;
-    writeln!(file, "\\usepackage{{amsmath}}")?;
+    writeln!(file, "\\usepackage{{amsmath,amssymb,amsthm}}")?;
     writeln!(file, "\\begin{{document}}")?;
     writeln!(file, "\\Huge")?;
     writeln!(file, "${}$", formula)?;
@@ -42,7 +42,7 @@ fn compile_latex_file(input_file: &Path, output_file: &Path) -> io::Result<()> {
             format!(
                 "pdflatex failed with code {}: {}",
                 output.status,
-                String::from_utf8_lossy(&output.stderr)
+                String::from_utf8_lossy(&output.stdout)
             ),
         ));
     }
