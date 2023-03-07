@@ -196,7 +196,7 @@ Der Inhalt hiervon wird leider von GitHub gar nicht gerendered, weswegen es für
 \subsection{Unterst\"utzung von \LaTeX-Formeln}
 Die Desktopversion von Anki ermöglicht bereits die Darstellung von \LaTeX-Formeln in Karteikarten. Hier wird beim ersten Anzeigen einer Karteikarte ein Bild der Formel mit einer lokal installierten \LaTeX-Engine gerendert und in der Anki-eigenen Mediendatenbank gespeichert. Die Formel in der Karteikarte wird durch das gerenderte Bild ersetzt. Somit muss jede Formel nur einmal gerendert werden. Insbesondere wird die Mediendatenbank über die Cloud synchronisiert. Somit reicht es, dass das erste Gerät eine \LaTeX-Installation hat.\\
 
-Die Mobilappliaktionen wie AnkiDroid oder die iOS-Version haben jedoch keine Unterstützung für \LaTeX. Dies stellt normalerweise kein Problem dar, da bei der Karteikartenerstellung über die Desktopapplikation bereits die Formel gerendered wird. Da der Karteikartengenerator hier jedoch eigenständig zu Anki funktioniert, muss in Rahmen dieser Applikation auch die Formelgeneration übernommen werden.\\
+Die Mobilappliaktionen wie AnkiDroid oder die iOS-Version haben jedoch keine Unterstützung für \LaTeX. Dies stellt normalerweise kein Problem dar, da bei der Karteikartenerstellung über die Desktopapplikation bereits die Formel gerendered wird. Da der Karteikartengenerator hier jedoch eigenständig zu Anki funktioniert, muss in Rahmen dieser Applikation auch die Formelgenerierung übernommen werden.\\
 
 Die Formelumwandlung ist jedoch nicht trivial. Das Problem hierbei sind die unterstützten Ausgabeformate:
 \begin{itemize}
@@ -215,9 +215,9 @@ Im folgenden wird eine Taxonomie der Konvertierungmöglichkeiten präsentiert:
 
 In unserem Fall haben wir uns für \texttt{dvisvgm} entschieden. Es ist eine Laufzeitabhängigkeit, jedoch in jeder kompletten TeXLive- sowie MikTeX-Installation vorhanden. Dies bedeutet, dass wir keine Abhängigkeiten haben, welche nicht auch von Anki vorrausgesetzt werden. Die von \texttt{dvisvgm} erstellen SVG-Grafiken werden dann durch \texttt{resvg} \cite{resvg} zu PNG exportiert.\\
 
-Als Syntax wurde sich \texttt{\$\$f(x)=x\$\$} für \LaTeX entschieden\footnote{Um das Parsing simpel zu halten restriktieren wir diese Syntax vorerst nur auf einzelne Zeilen.}. Dies entspricht auch der KaTeX-Syntax, welche sowohl von HedgeDoc, als auch von GitHub oder GitLab genutzt wird.
+Als Syntax wurde sich für \texttt{\$\$f(x)=x\$\$} für \LaTeX entschieden\footnote{Um das Parsing simpel zu halten restriktieren wir diese Syntax vorerst nur auf einzelne Zeilen.}. Dies entspricht auch der KaTeX-Syntax, welche sowohl von HedgeDoc, als auch von GitHub oder GitLab genutzt wird.
 
-\subsection{Commitbasierte Kartengeneration durch Continuous Integration (CI)}
+\subsection{Commitbasierte Kartengenerierung durch Continuous Integration (CI)}
 Im Rahmen der Continuous Integration (CI) Softwarepraktik bieten alle großen Git-Repository-Hostinganbieter sogenannte Workflows an. Hierbei wird zu spezifischen Events wie Commits oder Pull Requests ein Container ausgeführt, welcher automatisiert vordefinierte Aufgaben erfüllen kann. Unter den typischen Aufgaben von CI zählen das Analysieren von Source Code nach Best-Practises, dem sogenannten Linting, der Ausführung automatisierter Tests sowie der Erstellung von Kompilaten.\\
 
 In unserem Fall ermöglichen wir durch die Nutzung von CI-Workflows eine automatische Erstellung von Ankidecks aus Gitrepositories. Dieser Anwendungszweck ist so konzipiert das die Nutzerschaft gemeinsam kollaborativ via Git eine Ordnerstruktur an Anki-Markdowndokumenten erstellt. Im Rahmen dieses Praktikums wurden sowohl für GitLab \cite{GitlabTemplate} als auch für GitHub \cite{GithubTemplate} Repositoryvorlagen erstellt. Im folgenden wird ohne Beschränkung der Allgemeinheit die Funktionsweise anhand von Gitlab vorgestellt:
