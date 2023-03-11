@@ -33,8 +33,6 @@ fn require_executables() {
     println!("Checking for required executables...");
     println!("Checking for pdflatex...");
     latex::require_executable("pdflatex");
-    println!("Checking for pdfcrop...");
-    latex::require_executable("pdfcrop");
     println!("Checking for dvisvgm...");
     latex::require_executable("dvisvgm");
 }
