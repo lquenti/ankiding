@@ -51,7 +51,11 @@ fn get_cards_from_path(path: &Path) -> Result<HashMap<PathBuf, Vec<Card>>> {
     Ok(cards)
 }
 
-fn render_formula(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Result<()> {
+fn render_formula(
+    cards: &mut HashMap<PathBuf, Vec<Card>>,
+    path: &Path,
+    use_dark_mode: bool,
+) -> Result<()> {
     for cards in cards.values_mut() {
         for card in cards {
             let formulas = card.get_all_formulas();
@@ -59,7 +63,7 @@ fn render_formula(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Resul
                 continue;
             }
             for formula in formulas {
-                let output_file = latex::render_formula(&formula, path)?;
+                let output_file = latex::render_formula(&formula, path, use_dark_mode)?;
                 let new_formula = format!("![latex-render]({})", output_file.to_str().unwrap());
                 *card = card.replace_formula(&formula, &new_formula);
             }
@@ -127,7 +131,7 @@ fn main() -> Result<()> {
     let mut cards = get_cards_from_path(&cli.path)?;
 
     println!("Rendering formulas...");
-    render_formula(&mut cards, path)?;
+    render_formula(&mut cards, path, cli.dark_mode)?;
     println!("Downloading images...");
     download_images(&mut cards, path)?;
 

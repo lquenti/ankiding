@@ -18,12 +18,15 @@ pub fn require_executable(name: &str) {
     });
 }
 
-fn create_latex_file(formula: &str, filename: &Path) -> io::Result<()> {
+fn create_latex_file(formula: &str, filename: &Path, use_dark_mode: bool) -> io::Result<()> {
     let mut file = File::create(filename)?;
     writeln!(file, "\\documentclass{{standalone}}")?;
-    writeln!(file, "\\usepackage{{amsmath,amssymb,amsthm}}")?;
+    writeln!(file, "\\usepackage{{amsmath,amssymb,amsthm,xcolor}}")?;
     writeln!(file, "\\begin{{document}}")?;
     writeln!(file, "\\Huge")?;
+    if use_dark_mode {
+        writeln!(file, "\\color{{white}}")?;
+    }
     writeln!(file, "${}$", formula)?;
     writeln!(file, "\\end{{document}}")?;
     Ok(())
@@ -118,7 +121,7 @@ fn convert_svg_to_png(input_file: &Path, output_file: &Path) -> io::Result<()> {
     Ok(())
 }
 
-pub fn render_formula(formula: &str, out_path: &Path) -> io::Result<PathBuf> {
+pub fn render_formula(formula: &str, out_path: &Path, use_dark_mode: bool) -> io::Result<PathBuf> {
     let tmp_dir = tempdir()?;
     let filename = format!("{}", uuid::Uuid::new_v4());
     let filename_tex = format!("{}.tex", filename);
@@ -131,7 +134,7 @@ pub fn render_formula(formula: &str, out_path: &Path) -> io::Result<PathBuf> {
     // TODO Check if it is an directory
     let png_file = out_path.join(filename_png);
 
-    create_latex_file(formula, &tmp_file)?;
+    create_latex_file(formula, &tmp_file, use_dark_mode)?;
     compile_latex_file(&tmp_file, &pdf_file)?;
     convert_pdf_to_svg(&pdf_file, &svg_file)?;
     convert_svg_to_png(&svg_file, &png_file)?;
