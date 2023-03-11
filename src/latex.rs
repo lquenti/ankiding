@@ -23,7 +23,7 @@ fn create_latex_file(formula: &str, filename: &Path, use_dark_mode: bool) -> io:
     writeln!(file, "\\documentclass{{standalone}}")?;
     writeln!(file, "\\usepackage{{amsmath,amssymb,amsthm,xcolor}}")?;
     writeln!(file, "\\begin{{document}}")?;
-    writeln!(file, "\\Huge")?;
+    writeln!(file, "\\Large")?;
     if use_dark_mode {
         writeln!(file, "\\color{{white}}")?;
     }
