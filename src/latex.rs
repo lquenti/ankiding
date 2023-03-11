@@ -19,6 +19,7 @@ pub fn require_executable(name: &str) {
 }
 
 fn create_latex_file(formula: &str, filename: &Path, use_dark_mode: bool) -> io::Result<()> {
+    println!("DEBUG: {}", formula);
     let mut file = File::create(filename)?;
     writeln!(file, "\\documentclass{{standalone}}")?;
     writeln!(file, "\\usepackage{{amsmath,amssymb,amsthm,xcolor}}")?;
@@ -50,6 +51,11 @@ fn compile_latex_file(input_file: &Path, output_file: &Path) -> io::Result<()> {
         ));
     }
 
+    std::fs::rename(
+        input_file.with_extension("pdf"),
+        output_file,
+    )?;
+    /*
     let pdf_file = input_file.with_extension("pdf");
     let mut cmd = Command::new("pdfcrop");
     cmd.arg(pdf_file).arg(output_file);
@@ -64,7 +70,7 @@ fn compile_latex_file(input_file: &Path, output_file: &Path) -> io::Result<()> {
             ),
         ));
     }
-
+    */
     Ok(())
 }
 
