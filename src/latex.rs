@@ -51,10 +51,7 @@ fn compile_latex_file(input_file: &Path, output_file: &Path) -> io::Result<()> {
     }
 
     // put at the correct place
-    std::fs::rename(
-        input_file.with_extension("pdf"),
-        output_file,
-    )?;
+    std::fs::rename(input_file.with_extension("pdf"), output_file)?;
     Ok(())
 }
 
