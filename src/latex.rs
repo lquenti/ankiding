@@ -50,21 +50,8 @@ fn compile_latex_file(input_file: &Path, output_file: &Path) -> io::Result<()> {
         ));
     }
 
-    let pdf_file = input_file.with_extension("pdf");
-    let mut cmd = Command::new("pdfcrop");
-    cmd.arg(pdf_file).arg(output_file);
-    let output = cmd.output()?;
-    if !output.status.success() {
-        return Err(io::Error::new(
-            io::ErrorKind::Other,
-            format!(
-                "pdfcrop failed with code {}: {}",
-                output.status,
-                String::from_utf8_lossy(&output.stderr)
-            ),
-        ));
-    }
-
+    // put at the correct place
+    std::fs::rename(input_file.with_extension("pdf"), output_file)?;
     Ok(())
 }
 
