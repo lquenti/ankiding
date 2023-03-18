@@ -13,7 +13,8 @@ lazy_static! {
 
 lazy_static! {
     static ref CARD_RE: Regex =
-        Regex::new(r"(?P<card>>\s*[qQ]:.*?\n(?:>.*?\n)*>\s*[aA]:.*?\n(?:>.*?(\n|$))*)").unwrap();
+        Regex::new(r"(?P<card>>\s*[qQ]:.*?\n(?:>.*?\n)*>\s*[aA]:.*?(\n|$)(?:>.*?(\n|$))*)")
+            .unwrap();
     static ref IMAGE_RE: Regex =
         Regex::new(r"!\[(?P<alt>(?:.|\s)*?)\]\((?P<link>(?:.|\s)*?)\)").unwrap();
     static ref LATEX_RE: Regex = Regex::new(r"\$\$(?P<formula>.*?)\$\$").unwrap();

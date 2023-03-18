@@ -14,16 +14,24 @@ const FRONT_SIDE_TEMPLATE: &str = include_str!("../assets/templates/front.html")
 const BACK_SIDE_TEMPLATE: &str = include_str!("../assets/templates/back.html");
 
 lazy_static! {
-    static ref BASE_MODEL: Model = Model::new(
+    static ref LIGHT_MODEL: Model = Model::new(
         0x1337420,
         "Ankiding Model",
         vec![Field::new("Question"), Field::new("Answer"),],
         vec![Template::new("Card 1")
             .qfmt(FRONT_SIDE_TEMPLATE)
             .afmt(BACK_SIDE_TEMPLATE)],
-    );
-    static ref LIGHT_MODEL: Model = BASE_MODEL.clone().css(LIGHT_MODE_CSS);
-    static ref DARK_MODEL: Model = BASE_MODEL.clone().css(DARK_MODE_CSS);
+    )
+    .css(LIGHT_MODE_CSS);
+    static ref DARK_MODEL: Model = Model::new(
+        0x1337420,
+        "Ankiding Model",
+        vec![Field::new("Question"), Field::new("Answer"),],
+        vec![Template::new("Card 1")
+            .qfmt(FRONT_SIDE_TEMPLATE)
+            .afmt(BACK_SIDE_TEMPLATE)],
+    )
+    .css(DARK_MODE_CSS);
 }
 
 pub fn from_cards(filename: &Path, cards: &[Card], use_dark_mode: bool) -> Deck {
