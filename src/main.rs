@@ -136,7 +136,7 @@ fn main() -> Result<()> {
         println!("Rendering formulas...");
         render_formula(&mut cards, path)?;
     }
-    
+
     println!("Downloading images...");
     download_images(&mut cards, path)?;
 
