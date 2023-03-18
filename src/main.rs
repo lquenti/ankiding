@@ -27,6 +27,9 @@ struct Cli {
     /// Whether to use dark mode
     #[arg(long, default_value_t = false)]
     dark_mode: bool,
+    /// Do not render formulas
+    #[arg(long, default_value_t = false)]
+    no_latex: bool,
 }
 
 fn require_executables() {
@@ -118,16 +121,22 @@ fn download_images(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Resu
 }
 
 fn main() -> Result<()> {
-    require_executables();
+    let cli = Cli::parse();
+
+    if !cli.no_latex {
+        require_executables();
+    }
     let tempdir = TempDir::new()?;
     let path = tempdir.path();
-    let cli = Cli::parse();
 
     println!("Loading markdown files from {:?}...", &cli.path);
     let mut cards = get_cards_from_path(&cli.path)?;
 
-    println!("Rendering formulas...");
-    render_formula(&mut cards, path)?;
+    if !cli.no_latex {
+        println!("Rendering formulas...");
+        render_formula(&mut cards, path)?;
+    }
+    
     println!("Downloading images...");
     download_images(&mut cards, path)?;
 
