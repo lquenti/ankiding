@@ -136,7 +136,7 @@ fn main() -> Result<()> {
 
     if !cli.no_latex {
         println!("Rendering formulas...");
-        render_formula(&mut cards, path)?;
+        render_formula(&mut cards, path, cli.dark_mode)?;
     }
 
     println!("Downloading images...");
