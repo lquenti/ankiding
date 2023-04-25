@@ -122,8 +122,6 @@ fn download_images(cards: &mut HashMap<PathBuf, Vec<Card>>, path: &Path) -> Resu
     Ok(())
 }
 
-
-
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
