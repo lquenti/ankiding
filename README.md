@@ -20,12 +20,14 @@ Furthermore, we have pre-built templates for both GitHub and GitLab CIs so that,
 
 ## Installation
 
-For now, a full LaTeX suite is required in order to pre-render all LaTeX formula as the mobile apps do not support on demand formula rendering. On Debian/Ubuntu based systems:
+If LaTeX support, especially for mobile clients that do not ship a LaTeX rendering functionality themselves, is wanted, one has to install TeXlive.
 
 ```bash
 # Everything else that has pdflatex and dvisvgm should probably suffice
 sudo apt install texlive-full
 ```
+
+Otherwise the program can be started with the `--no-latex` parameter.
 
 Until we have automated builds, you also need the following build dependencies:
 ```bash
